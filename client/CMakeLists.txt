@@ -11,15 +11,21 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(SOURCES
     src/app.cpp
-    src/sync.cpp
+    src/util.cpp
     src/load.cpp
 )
 
-add_executable(Test1 test/test1.cpp ${SOURCES})
+add_executable(init exec/init.cpp ${SOURCES})
 
-target_include_directories(Test1
+
+target_include_directories(init
 	PRIVATE
 		${PROJECT_SOURCE_DIR}/include
 )
 
+add_executable(update exec/update.cpp ${SOURCES})
 
+target_include_directories(update
+	PRIVATE
+		${PROJECT_SOURCE_DIR}/include
+)

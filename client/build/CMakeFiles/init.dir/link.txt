@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/init.dir/exec/init.cpp.o CMakeFiles/init.dir/src/app.cpp.o CMakeFiles/init.dir/src/util.cpp.o CMakeFiles/init.dir/src/load.cpp.o  -o init 

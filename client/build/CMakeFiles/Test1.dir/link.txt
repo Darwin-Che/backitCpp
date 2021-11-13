@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/Test1.dir/test/test1.cpp.o CMakeFiles/Test1.dir/src/app.cpp.o CMakeFiles/Test1.dir/src/sync.cpp.o CMakeFiles/Test1.dir/src/load.cpp.o  -o Test1 

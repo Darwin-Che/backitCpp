@@ -1,0 +1,36 @@
+# Client - Server Communication
+
+This happens when the client calls `backit / backit ls`. 
+
+The terminal shows a interactive text ui that is a temporal composition
+of the remote fs with local fs. 
+
+Each entry is one of the following type:
+
+- local file/directory
+- sync file (synced/unsynced)
+- syncless dir (synced/unsynced)
+- syncmore dir (synced/unsynced)
+- remote file/dir
+
+User Operations allowed are : 
+
+- local file -> sync file (unsynced)
+- local dir -> syncless dir (unsynced)
+- local dir -> syncmore dir (unsynced)
+
+- sync file (unsynced) -> sync file (synced)
+- syncless dir (unsynced) -> syncless dir (synced)
+- syncmore dir (unsynced) -> syncmore dir (synced)
+
+- file (synced) -> remote
+- dir (synced) [all content are remotable] -> remote
+
+- remote file -> file (synced)
+- remote dir -> syncless dir (synced) [all subdir are remote]
+
+## Invariant online
+
+The content of the depot == remore file system
+
+All remote points in the local repo is synced with depot

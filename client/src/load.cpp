@@ -2,6 +2,7 @@
 #include "client.h"
 #include <fcntl.h>
 #include <cstdio>
+#include <errno.h>
 
 super_t * super_t::data;
 mdt_t * mdt_t::data;
@@ -23,8 +24,9 @@ char *create_mmap(const char * dir, size_t bsize) {
 	struct stat st = {0};
 	if (stat(dir, &st) != -1) {
 		printf("overwriting %s\n", dir);
+		chmod(dir, S_IRWXU|S_IRWXG);
 	}
-	int fd = open(dir, O_RDWR|O_CREAT|O_TRUNC);
+	int fd = open(dir, O_RDWR|O_CREAT|O_TRUNC, S_IRWXU|S_IRWXU);
 	ftruncate(fd, bsize);
 	char *res = (char *) mmap(nullptr, bsize, PROT_READ|PROT_WRITE, 
 				MAP_FILE|MAP_SHARED, fd, 0);
@@ -57,11 +59,21 @@ void init_create() {
 	// create fname file
 	fname_t::data = (fname_t *) create_mmap(".backit/fname", init_size * sizeof(fname_t));
 
+	// the root of .backit
+	mdt_t::data[0].m_fname = 0;
+	mdt_t::data[0].m_is_dir = 1;
+	mdt_t::data[0].m_parent = MIDX_MAX;
+	// mdt_t::data[0].m_sync_status = ;
+	// mdt_t::data[0].m_sync_time = ;
+	mdt_t::data[0].m_dirmap.init();
+	getcwd(fname_t::data[0].fname, fname_t::MAXLEN);
+
 	// init the frlst
 	super_t::data->dirmap_fl.init();
 	super_t::data->mdt_fl.init();
 	super_t::data->fname_fl.init();
-	for (unsigned i = 0; i < init_size; ++i) {
+	super_t::data->dirmap_fl.insert_tail(0);
+	for (unsigned i = 1; i < init_size; ++i) {
 		super_t::data->dirmap_fl.insert_tail(i);
 		super_t::data->mdt_fl.insert_tail(i);
 		super_t::data->fname_fl.insert_tail(i);
@@ -85,15 +97,22 @@ char *load_mmap(const char * dir, size_t bsize) {
 	return res;
 }
 
-void load() {
+void load(const char * rootdir) {
+	size_t slen = strlen(rootdir);
+	char * str = new char[slen + 32];
+	strcpy(str, rootdir);
 	// read super
-	super_t::data = (super_t *) load_mmap(".backit/super", sizeof(super_t));
+	strcpy(str + slen, ".backit/super");
+	super_t::data = (super_t *) load_mmap(str, sizeof(super_t));
 	// read mdt
-	mdt_t::data = (mdt_t *) load_mmap(".backit/mdt", super_t::data->mdt_sz * sizeof(mdt_t));
+	strcpy(str + slen, ".backit/mdt");
+	mdt_t::data = (mdt_t *) load_mmap(str, super_t::data->mdt_sz * sizeof(mdt_t));
 	// read dirmap
-	dirmap_t::data = (dirmap_t *) load_mmap(".backit/dirmap", super_t::data->dirmap_sz * sizeof(dirmap_t));
+	strcpy(str + slen, ".backit/dirmap");
+	dirmap_t::data = (dirmap_t *) load_mmap(str, super_t::data->dirmap_sz * sizeof(dirmap_t));
 	// read fname
-	fname_t::data = (fname_t *) load_mmap(".backit/fname", super_t::data->fname_sz * sizeof(fname_t));
+	strcpy(str + slen, ".backit/fname");
+	fname_t::data = (fname_t *) load_mmap(str, super_t::data->fname_sz * sizeof(fname_t));
 }
 
 void unload() {

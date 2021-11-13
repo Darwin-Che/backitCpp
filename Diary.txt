@@ -1,0 +1,15 @@
+# Diary
+
+The purpose is to write down the lessons learnt in application development.
+
+## Oct 13, 2021
+
+When detailing the logic of the application, i.e. how server communicates with client, 
+things can be tangled up. 
+
+The reason is there are so many decisions to make, and there are associations between them.
+So in the process of fixing the decisions, make sure to untangle the logic, be clear about the 
+dependency between the decisions, and then work top-down. 
+
+
+

@@ -1,0 +1,4 @@
+/u4/z4che/backit/client/build/CMakeFiles/rebuild_cache.dir
+/u4/z4che/backit/client/build/CMakeFiles/edit_cache.dir
+/u4/z4che/backit/client/build/CMakeFiles/update.dir
+/u4/z4che/backit/client/build/CMakeFiles/init.dir

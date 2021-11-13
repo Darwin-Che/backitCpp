@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <climits>
+#include <cstring>
 
 /*************
  * new types *
@@ -25,6 +26,11 @@ struct midx {
 template<typename T>
 bool operator==(const midx<T> & i1, const midx<T> & i2) {
 	return i1.idx == i2.idx;
+}
+
+template<typename T>
+size_t operator*(const midx<T> & i1, size_t mult) {
+	return i1.idx * mult;
 }
 
 enum SyncStatus {UNTRACKED, LOCAL, REMOTE, 
@@ -51,24 +57,27 @@ struct fname_t;
 
 /* funcs */
 
-void load();
+void load(const char * rootdir);
 void unload();
 void init_create();
 void resize_mmap(const char * dir, void ** ptr, size_t oldsz, size_t newsz);
+void print_mdt(midx<mdt_t> mi, unsigned depth = 0);
+
+int find_depot(char * depot_dir);
 
 /********************
  * mindex functions *
  ********************/
 
+#define PTRSAFE
+
 template<typename T>
-T * ptr(midx<T> i) {
-	return &T::data[i.idx];
-}
+T * ptr(midx<T> i);
 
 template<typename T> 
-midx<T> idx(T * p) {
-	return (p - T::data) / sizeof(T);
-}
+midx<T> idx(T * p);
+
+#include "util.hpp"
 
 /*******************
  * shortcuts macro *
@@ -150,12 +159,13 @@ struct memctrl_t {
  * in memory structs *
  *********************/
 
+// app only works for already created syncs
 struct app_t {
-	memctrl_t<mdt_t> * 		mdt_memctrl;
-	memctrl_t<dirmap_t> *	dirmap_memctrl;
-	memctrl_t<fname_t> * 	fname_memctrl;
+	memctrl_t<mdt_t>  		*mdt_memctrl;
+	memctrl_t<dirmap_t> 	*dirmap_memctrl;
+	memctrl_t<fname_t>  	*fname_memctrl;
 
-	app_t();
+	app_t(const char * rootdir);
 	~app_t();
 	midx<mdt_t> add_track_unit(midx<mdt_t> dir, const char * str);
 	midx<mdt_t> add_track_file(midx<mdt_t> dir, const char * str);
@@ -171,9 +181,9 @@ struct super_t {
 	list_t<mdt_t, frlst_a<mdt_t>>				mdt_fl;
 	list_t<dirmap_t, frlst_a<dirmap_t>>		dirmap_fl;
 	list_t<fname_t, frlst_a<fname_t>>			fname_fl;
-	unsigned long		mdt_sz;
-	unsigned long 		dirmap_sz;
-	unsigned long		fname_sz;
+	midx<mdt_t>		mdt_sz;
+	midx<dirmap_t> 	dirmap_sz;
+	midx<fname_t>		fname_sz;
 
 	static super_t * data;
 	static const char dir[];
