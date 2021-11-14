@@ -10,7 +10,7 @@ First, consider displaying with `ls` command.
 
 ( Then display on the pClui (curse.h) lib we had. )
 
-
+The key is the remote files must have proper mtime to denote the last sync with local.
 
 
 
