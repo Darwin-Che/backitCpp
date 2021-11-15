@@ -12,5 +12,14 @@ First, consider displaying with `ls` command.
 
 The key is the remote files must have proper mtime to denote the last sync with local.
 
+# Data format when tranfering over internet (byte streams)
+
+# Directory list
+
+```
+{fname}\n{time_upper32}{time_lower32}\n
+```
+
+repeatedly.
 
 
