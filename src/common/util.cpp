@@ -50,7 +50,7 @@ int read64b(int fd, uint64_t * buffer) {
 	uint32_t hilo[2];
 	char * buf = (char *) &hilo[0];
 	size_t toRead = sizeof(hilo);
-	size_t numRead;
+	ssize_t numRead;
 
 	if (buffer == NULL) {
 		errno = EINVAL;
@@ -80,4 +80,15 @@ int read64b(int fd, uint64_t * buffer) {
 	*buffer = ((((uint64_t) ntohl(hilo[0])) << 32) | ntohl(hilo[1]));
 
 	return 8;
+}
+
+int write64b(int fd, uint64_t data) {
+	uint32_t hi_lo[2];
+	hi_lo[0] = htonl(data >> 32);
+	hi_lo[1] = htonl(data);
+
+	if (write(fd, hi_lo, sizeof(hi_lo)) != sizeof(hi_lo))
+		return -1;
+
+	return 1;
 }

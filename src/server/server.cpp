@@ -49,21 +49,14 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		uint64_t curttime = 3;
-		uint32_t hi_lo[2];
-		hi_lo[0] = htonl(curttime >> 32);
-		hi_lo[1] = htonl(curttime);
- 
-		if (write(cfd, hi_lo, sizeof(uint32_t)) != sizeof(uint32_t))
-			errExit("write time");
+		uint64_t curttime = 4;
 		
+		if (write64b(cfd, curttime) <= 0) 
+			errExit("write time");
+
 		char msg[] = "filename1\n";
 		if (write(cfd, msg, sizeof(msg)) != sizeof(msg))
 			errExit("wrtie msg");
-
-
-		if (write(cfd, "ab\n", 3) != 3)
-			errExit("Error on Write");
 
 		if (close(cfd) == -1)
 			errExit("close");
