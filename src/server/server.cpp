@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 					claddrStr, ntohs(claddr.sin_port));
 
 		if (read(cfd, pathname, PATH_MAX) <= 0) {
-			close(cfg);
+			close(cfd);
 			continue;
 		}
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		if (write(cfd, hi_lo, sizeof(uint32_t)) != sizeof(uint32_t))
 			errExit("write time");
 		
-		char msg[] = "filename1\n"
+		char msg[] = "filename1\n";
 		if (write(cfd, msg, sizeof(msg)) != sizeof(msg))
 			errExit("wrtie msg");
 

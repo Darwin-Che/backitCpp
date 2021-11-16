@@ -12,13 +12,10 @@ COMMON_CPP = $(filter %.cpp, $(COMMON_SRC))
 COMMON_OBJ = $(patsubst %.cpp, %.o, $(COMMON_CPP))
 
 
-# server depends on all files under folders 
-#      include/    src/common/   src/server
-server : $(HEADER) $(COMMON_SRC) $(SERVER_SRC)
+server : $(HEADER) $(SERVER_OBJ) $(COMMON_OBJ)
 	$(CC) $(CFLAGS) $(SERVER_OBJ) $(COMMON_OBJ) -o server
 
-# server depends on all files under folders 
-#      include/    src/common/   src/client
+
 # client :$(HEADER) $(COMMON_SRC) $(CLIENT_SRC)
 
 %.o : %.cpp

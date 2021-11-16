@@ -1,6 +1,6 @@
 #include "header.h"
 
-void errExit(char* msg) {
+void errExit(const char * msg) {
 	printf("%s\n", msg);
 	exit(1);
 }

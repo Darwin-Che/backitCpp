@@ -7,11 +7,13 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#define BUF_SIZE 10
+
 #define PORT_NUM 50002
+#define PATH_MAX 1024
+
 
 // UTILITIES
 
-void errExit(char* msg);
+void errExit(const char * msg);
 
 ssize_t readLine(int fd, void * buffer, size_t n);
