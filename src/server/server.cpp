@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 			printf("RECEIVING FROM (%s, %u)\n", 
 					claddrStr, ntohs(claddr.sin_port));
 
-		if (read(cfd, pathname, PATH_MAX) <= 0) {
+		if (readLine(cfd, pathname, PATH_MAX) <= 0) {
 			close(cfd);
 			continue;
 		}
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 			if (write64b(cfd, mdp->m_mtime_rem) <= 0) 
 				errExit("write time");
 			
-			if (write(cfd, mdp->m_name, mdp->m_name_len) != mdp->m_name_len)
+			if (write(cfd, mdp->m_name, mdp->m_name_len) != (ssize_t) mdp->m_name_len)
 				errExit("write name");
 
 			if (write(cfd, "\n", 1) != 1)
