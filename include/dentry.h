@@ -13,6 +13,7 @@ struct mdirent_t {
 	mdirent_t *	m_next;
 	time_t		m_mtime_loc;
 	time_t		m_mtime_rem;
+	size_t		m_name_len;
 	char			m_name[NAME_MAX];
 };
 
@@ -23,6 +24,7 @@ struct dirtbl_t {
 };
 
 struct dirlst_t {
+	size_t		len;
 	mdirent_t	* 	head;
 };
 

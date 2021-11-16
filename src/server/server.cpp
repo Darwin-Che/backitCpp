@@ -1,4 +1,5 @@
 #include "header.h"
+#include "dentry.h"
 
 #define BACKLOG 3
 
@@ -49,14 +50,21 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		uint64_t curttime = 4;
-		
-		if (write64b(cfd, curttime) <= 0) 
-			errExit("write time");
+		printf("pathname : %s\n", pathname);
+		dirlst_t * dl = to_dirlst(pathname);
+		if (write64b(cfd, dl->len) <= 0)
+			errExit("write total");
 
-		char msg[] = "filename1\n";
-		if (write(cfd, msg, sizeof(msg)) != sizeof(msg))
-			errExit("wrtie msg");
+		for (mdirent_t * mdp = dl->head; mdp; mdp = mdp->m_next) {
+			if (write64b(cfd, mdp->m_mtime_rem) <= 0) 
+				errExit("write time");
+			
+			if (write(cfd, mdp->m_name, mdp->m_name_len) != mdp->m_name_len)
+				errExit("write name");
+
+			if (write(cfd, "\n", 1) != 1)
+				errExit("write newline");
+		}
 
 		if (close(cfd) == -1)
 			errExit("close");

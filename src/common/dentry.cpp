@@ -6,12 +6,10 @@ void print_dirlst(dirlst_t * dl) {
 	static char mtime_rem[30];
 	unsigned count = 0;
 	printf("Printing the dirlst :\n");
-	mdirent_t * mdp = dl->head;
-	while (mdp != nullptr) {
+	for (mdirent_t * mdp = dl->head; mdp; mdp = mdp->m_next) {
 		prtime(mtime_loc, &mdp->m_mtime_loc);
 		prtime(mtime_rem, &mdp->m_mtime_rem);
 		printf("%-10s  |  %s  |  %s\n", mdp->m_name, mtime_loc, mtime_rem);
-		mdp = mdp->m_next;
 		++count;
 	}
 	printf("Length = %u.\n\n", count);
@@ -21,6 +19,7 @@ void print_dirlst(dirlst_t * dl) {
 dirlst_t * to_dirlst(char * pathname) {
 	dirlst_t * lst = new dirlst_t;
 	lst->head = nullptr;
+	lst->len = 0;
 	mdirent_t ** tail = &lst->head;
 	DIR * dirp = opendir(pathname);
 	dirent * dp;
@@ -42,19 +41,23 @@ dirlst_t * to_dirlst(char * pathname) {
 			break;
 		if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) 
 			continue;
+
 		*tail = new mdirent_t;
 		// file name
 		strcpy((*tail)->m_name, dp->d_name);
+		(*tail)->m_name_len = strlen((*tail)->m_name);
 		// read mtime
 		strcpy(filename + pathlen, dp->d_name);
 		memset(&st, 0x0, sizeof(st));
 		if (stat(filename, &st) == -1)
 			std::runtime_error("stat\n");
 		(*tail)->m_mtime_loc = (*tail)->m_mtime_rem = st.st_mtime;
+		// add list len
+		++lst->len;
+		
 		tail = &(*tail)->m_next;
 	}
 	(*tail) = nullptr;
-
 	delete[] filename;
 
 	return lst;
@@ -64,11 +67,8 @@ dirtbl_t * to_dirtbl(dirlst_t * lst) {
 	dirtbl_t * tbl = new dirtbl_t;
 	tbl->data = std::map<std::string, mdirent_t *>();
 
-	mdirent_t * mdp = lst->head;
-	while (mdp != nullptr) {
+	for (mdirent_t * mdp = lst->head; mdp; mdp = mdp->m_next)
 		tbl->data[mdp->m_name] = mdp;
-		mdp = mdp->m_next;
-	}
 
 	return tbl;
 }
@@ -92,8 +92,7 @@ void comb_loc_rem(
 	// always make inloc table
 	dirtbl_t * tbl = to_dirtbl(inrem); 
 	std::map<std::string, mdirent_t *>::iterator it;
-	mdirent_t * mdp = inloc->head;
-	while (mdp != nullptr) {
+	for (mdirent_t * mdp = inloc->head; mdp; mdp = mdp->m_next) {
 		if ((it = tbl->data.find(mdp->m_name)) != tbl->data.end()) {
 			*outsync_tail = new mdirent_t;
 			memcpy(*outsync_tail, mdp, sizeof(mdirent_t));
@@ -105,7 +104,6 @@ void comb_loc_rem(
 			memcpy(*outloc_tail, mdp, sizeof(mdirent_t));
 			outloc_tail = &(*outloc_tail)->m_next;
 		}
-		mdp = mdp->m_next;
 	}
 	for (auto p : tbl->data) {
 		*outrem_tail = new mdirent_t;
