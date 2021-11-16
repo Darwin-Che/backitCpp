@@ -75,8 +75,6 @@ int read64b(int fd, uint64_t * buffer) {
 		}
 	}
 
-	printf("%x %x\n", ntohl(hilo[0]), ntohl(hilo[1]));
-
 	*buffer = ((((uint64_t) ntohl(hilo[0])) << 32) | ntohl(hilo[1]));
 
 	return 8;
