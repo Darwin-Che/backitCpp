@@ -30,4 +30,6 @@ ssize_t readLine(int fd, void * buffer, size_t n);
 
 int read64b(int fd, uint64_t * buffer);
 
+int write64b(int fd, uint64_t data);
+
 #endif
