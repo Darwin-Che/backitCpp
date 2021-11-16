@@ -1,8 +1,6 @@
 #include "dentry.h"
 #include <sstream>
 
-#define prtime(s, t) strftime(s, 30, "%c", localtime(t))
-
 void print_dirlst(dirlst_t * dl) {
 	static char mtime_loc[30];
 	static char mtime_rem[30];

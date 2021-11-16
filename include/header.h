@@ -20,13 +20,13 @@
 
 #define PORT_NUM 50002
 
-
+#define prtime(s, t) strftime(s, 30, "%c", localtime(t))
 
 // UTILITIES
 
 void errExit(const char * msg);
 
-ssize_t readLine(int fd, void * buffer, size_t n);
+ssize_t readLine(int fd, void * buffer, size_t n, bool rstrip = true);
 
 int read64b(int fd, uint64_t * buffer);
 

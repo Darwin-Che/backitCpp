@@ -5,7 +5,7 @@ void errExit(const char * msg) {
 	exit(1);
 }
 
-ssize_t readLine(int fd, void * buffer, size_t n) {
+ssize_t readLine(int fd, void * buffer, size_t n, bool rstrip) {
 	ssize_t numRead;
 	size_t totRead;
 	char *buf;
@@ -43,6 +43,8 @@ ssize_t readLine(int fd, void * buffer, size_t n) {
 		}
 	}
 	*buf = '\0';
+	if (rstrip && *(buf - 1) == '\n')
+		*(buf - 1) = '\0';
 	return totRead;
 }
 	

@@ -6,8 +6,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in svaddr;
 	int sfd;
 	ssize_t numRead;
-	dirlst_t * lst = new dirlst_t;
-	mdirent_t ** mdp = &lst->head;
 
 	if (argc < 3 || strcmp(argv[1], "--help") == 0)
 		errExit("usage error");
@@ -30,20 +28,28 @@ int main(int argc, char *argv[])
 	if (write(sfd, "\n", 1) != 1)
 		errExit("failed write newline");
 
-	uint64_t curttime;
-	if (read64b(sfd, &curttime) < 0) 
-		errExit("read time");
+	uint64_t totalNum;
+	if(read64b(sfd, &totalNum) < 0)
+		errExit("read total");
+	
+	printf("Number of Entries: %llu\n", totalNum);
 
-	printf("time is %llu\n", curttime);
-
-	char msg[100];
-	numRead = readLine(sfd, msg, sizeof(msg));
-	if (numRead == -1)
-		errExit("readLine");
-	if (numRead == 0)
-		errExit("Unexpect EOF");
-
-	printf("name is %s\n", msg);
+	uint64_t mtime_rem;
+	char timestr[30];
+	char filename[NAME_MAX];
+	for (; totalNum > 0; --totalNum) {
+		if (read64b(sfd, &mtime_rem) < 0) 
+			errExit("read time");
+		
+		numRead = readLine(sfd, filename, NAME_MAX);
+		if (numRead == -1)
+			errExit("readLine");
+		if (numRead == 0)
+			errExit("Unexpect EOF");
+	
+		prtime(timestr, (time_t *) &mtime_rem);
+		printf("%-10s  |  %s\n", filename, timestr);
+	}
 
 	return 0;
 }
