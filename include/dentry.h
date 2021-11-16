@@ -14,7 +14,7 @@ struct mdirent_t {
 	time_t		m_mtime_loc;
 	time_t		m_mtime_rem;
 	size_t		m_name_len;
-	char			m_name[NAME_MAX];
+	char			m_name[NAME_MAX + 1];
 };
 
 // a collection of mdirent_t 

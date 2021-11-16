@@ -12,7 +12,7 @@ void print_dirlst(dirlst_t * dl) {
 		printf("%-10s  |  %s  |  %s\n", mdp->m_name, mtime_loc, mtime_rem);
 		++count;
 	}
-	printf("Length = %u.\n\n", count);
+	printf("Length = %u. Count = %zu. \n\n", count, dl->len);
 
 }
 
