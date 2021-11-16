@@ -1,8 +1,12 @@
+#ifndef DENTRY_H
+#define DENTRY_H
+
 #include <dirent.h>
 #include <sys/stat.h>
 #include <string>
 #include <cstring>
 #include <map>
+#include "header.h"
 
 // in memory struct for directory entries
 struct mdirent_t {
@@ -37,3 +41,5 @@ void comb_loc_rem(
 		dirlst_t ** outloc,
 		dirlst_t ** outrem,
 		dirlst_t ** synclst);
+
+#endif

@@ -52,7 +52,7 @@ dirlst_t * to_dirlst(char * pathname) {
 		memset(&st, 0x0, sizeof(st));
 		if (stat(filename, &st) == -1)
 			std::runtime_error("stat\n");
-		(*tail)->m_mtime_loc = (*tail)->m_mtime_rem = st.st_mtim.tv_sec;
+		(*tail)->m_mtime_loc = (*tail)->m_mtime_rem = st.st_mtime;
 		tail = &(*tail)->m_next;
 	}
 	(*tail) = nullptr;

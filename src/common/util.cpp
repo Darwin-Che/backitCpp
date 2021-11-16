@@ -46,4 +46,38 @@ ssize_t readLine(int fd, void * buffer, size_t n) {
 	return totRead;
 }
 	
+int read64b(int fd, uint64_t * buffer) {
+	uint32_t hilo[2];
+	char * buf = (char *) &hilo[0];
+	size_t toRead = sizeof(hilo);
+	size_t numRead;
 
+	if (buffer == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	while (toRead > 0) {
+		numRead = read(fd, buf, toRead);
+
+		if (numRead == -1) {
+			if (errno == EINTR)
+				continue;
+			else
+				return -1;
+
+		} else if (numRead == 0) {
+			return -1;
+		
+		} else {
+			buf += numRead;
+			toRead -= numRead;
+		}
+	}
+
+	printf("%x %x\n", ntohl(hilo[0]), ntohl(hilo[1]));
+
+	*buffer = ((((uint64_t) ntohl(hilo[0])) << 32) | ntohl(hilo[1]));
+
+	return 8;
+}

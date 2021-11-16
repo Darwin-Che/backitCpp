@@ -1,9 +1,10 @@
 #include "header.h"
+#include "dentry.h"
 
 int main(int argc, char *argv[])
 {
-	struct sockaddr_in svaddr, rcaddr;
-	int sfd, j;
+	struct sockaddr_in svaddr;
+	int sfd;
 	ssize_t numRead;
 	dirlst_t * lst = new dirlst_t;
 	mdirent_t ** mdp = &lst->head;
@@ -29,11 +30,9 @@ int main(int argc, char *argv[])
 	if (write(sfd, "\n", 1) != 1)
 		errExit("failed write newline");
 
-	uint32_t hi_lo[2];
-	if (read(sfd, hi_lo, sizeof(hi_lo)) <= 0) 
+	uint64_t curttime;
+	if (read64b(sfd, &curttime) < 0) 
 		errExit("read time");
-	
-	uint64_t curttime = (ntohl(hi_lo[0]) << 32) | ntohl(ht_lo[1]);
 
 	printf("time is %llu\n", curttime);
 

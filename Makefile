@@ -11,12 +11,17 @@ COMMON_SRC = $(wildcard src/common/*)
 COMMON_CPP = $(filter %.cpp, $(COMMON_SRC))
 COMMON_OBJ = $(patsubst %.cpp, %.o, $(COMMON_CPP))
 
+CLIENT_SRC = $(wildcard src/client/*)
+CLIENT_CPP = $(filter %.cpp, $(CLIENT_SRC))
+CLIENT_OBJ = $(patsubst %.cpp, %.o, $(CLIENT_CPP))
 
 server : $(HEADER) $(SERVER_OBJ) $(COMMON_OBJ)
 	$(CC) $(CFLAGS) $(SERVER_OBJ) $(COMMON_OBJ) -o server
 
 
-# client :$(HEADER) $(COMMON_SRC) $(CLIENT_SRC)
+client :$(HEADER) $(CLIENT_OBJ) $(COMMON_OBJ)
+	$(CC) $(CFLAGS) $(CLIENT_OBJ) $(COMMON_OBJ) -o client
+
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
