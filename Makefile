@@ -23,7 +23,7 @@ client :$(HEADER) $(CLIENT_OBJ) $(COMMON_OBJ)
 	$(CC) $(CFLAGS) $(CLIENT_OBJ) $(COMMON_OBJ) -o client
 
 
-%.o : %.cpp
+%.o : %.cpp $(HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean

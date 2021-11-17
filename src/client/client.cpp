@@ -55,7 +55,22 @@ int main(int argc, char *argv[])
 	}
 	*mdp = nullptr;
 
-	print_dirlst(lst);
+	dirlst_t *loclst, *remlst, *synclst;
+	comb_loc_rem(
+		to_dirlst("."),
+		lst,
+		&loclst,
+		&remlst,
+		&synclst);
+
+	printf("LOCAL : \n");
+	print_dirlst(loclst);
+
+	printf("REMOTE : \n");
+	print_dirlst(remlst);
+
+	printf("SYNC : \n");
+	print_dirlst(synclst);
 
 	return 0;
 }

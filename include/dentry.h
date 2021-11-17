@@ -11,8 +11,8 @@
 // in memory struct for directory entries
 struct mdirent_t {
 	mdirent_t *	m_next;
-	time_t		m_mtime_loc;
-	time_t		m_mtime_rem;
+	int64_t		m_mtime_loc;
+	int64_t		m_mtime_rem;
 	size_t		m_name_len;
 	char			m_name[NAME_MAX + 1];
 };
@@ -32,7 +32,7 @@ struct dirlst_t {
 void print_dirlst(dirlst_t * dl);
 
 // convert into dirlst
-dirlst_t * to_dirlst(char * pathname);
+dirlst_t * to_dirlst(const char * pathname);
 
 // construct table
 dirtbl_t * to_dirtbl(dirlst_t *);

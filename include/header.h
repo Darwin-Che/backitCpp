@@ -20,7 +20,7 @@
 
 #define PORT_NUM 50002
 
-#define prtime(s, t) strftime(s, 30, "%c", localtime(t))
+#define prtime(s, t) strftime(s, 30, "%c", localtime((time_t *)t))
 
 // UTILITIES
 

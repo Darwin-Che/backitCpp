@@ -16,7 +16,7 @@ void print_dirlst(dirlst_t * dl) {
 
 }
 
-dirlst_t * to_dirlst(char * pathname) {
+dirlst_t * to_dirlst(const char * pathname) {
 	dirlst_t * lst = new dirlst_t;
 	lst->head = nullptr;
 	lst->len = 0;
@@ -84,6 +84,7 @@ void comb_loc_rem(
 	*outloc = new dirlst_t;
 	*outrem = new dirlst_t;
 	*outsync = new dirlst_t;
+	(*outloc)->len = (*outrem)->len = (*outsync)->len = 0;
 	// the tail to append to
 	mdirent_t ** outloc_tail = &(*outloc)->head;
 	mdirent_t ** outrem_tail = &(*outrem)->head;
@@ -98,17 +99,20 @@ void comb_loc_rem(
 			memcpy(*outsync_tail, mdp, sizeof(mdirent_t));
 			(*outsync_tail)->m_mtime_rem = (*it).second->m_mtime_rem;
 			outsync_tail = &(*outsync_tail)->m_next;
+			(*outsync)->len++;
 			tbl->data.erase(mdp->m_name);
 		} else {
 			*outloc_tail = new mdirent_t;
 			memcpy(*outloc_tail, mdp, sizeof(mdirent_t));
 			outloc_tail = &(*outloc_tail)->m_next;
+			(*outloc)->len++;
 		}
 	}
 	for (auto p : tbl->data) {
 		*outrem_tail = new mdirent_t;
 		memcpy(*outrem_tail, p.second, sizeof(mdirent_t));
 		outrem_tail = &(*outrem_tail)->m_next;
+		(*outrem)->len++;
 	}
 	*outloc_tail = nullptr;
 	*outrem_tail = nullptr;
