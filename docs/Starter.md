@@ -17,9 +17,31 @@ The key is the remote files must have proper mtime to denote the last sync with 
 # Directory list
 
 ```
-{time_upper32}{time_lower32}{fname}\n
+{time_64}{fname}\n
 ```
 
 repeatedly.
 
+# Files
 
+## Sync 
+
+```
+{num_files_64}
+
+Each file
+
+{fname}\n
+```
+
+## Content
+
+```
+{num_files_64}
+
+Each file
+
+{fname}\n
+{time_64}{filesz_64}{content}
+
+```

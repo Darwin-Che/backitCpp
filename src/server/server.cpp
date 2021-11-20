@@ -27,10 +27,16 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 				errExit("sv_dirlst fail");
 			}
 			break;
-		case OP_SV_FILE:
-			if (sv_file(cfd) < 0) {
+		// case OP_SV_FILE:
+		// 	if (sv_file(cfd) < 0) {
+		// 		free(claddr);
+		// 		errExit("sv_file fail");
+		// 	}
+		// 	break;
+		case OP_SV_SYNC_DOWNLOAD:
+			if (sv_sync_download(cfd) < 0) {
 				free(claddr);
-				errExit("sv_file fail");
+				errExit("sv_sync_download fail");
 			}
 			break;
 		default:
@@ -73,6 +79,21 @@ int sv_dirlst(int cfd) {
 	return 0;
 }
 
+int sv_sync_download(int cfd) {
+	char ** pathnames;
+	size_t numfiles;
+	if (bi_sync_read(cfd, &pathnames, &numfiles) < 0)
+		errExit("sync_read fails");
+	
+	// print the received pathnames
+	for (size_t n = 0; n < numfiles; ++n) {
+		printf("%s\n", pathnames[n]);
+	}
+
+	return 0;
+}
+
+#if 0
 int sv_file(int cfd) {
 	char pathname[PATH_MAX]; // big stack allocation
 	struct stat st;
@@ -103,3 +124,6 @@ int sv_file(int cfd) {
 	close(cfd);
 	return 0;
 }
+#endif
+
+
