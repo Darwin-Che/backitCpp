@@ -1,8 +1,8 @@
+#include "client.h"
 #include "header.h"
 #include "dentry.h"
 
-int main(int argc, char *argv[])
-{
+int main_ls(int argc, char ** argv) {
 	struct sockaddr_in svaddr;
 	int sfd;
 	ssize_t numRead;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
 	dirlst_t *loclst, *remlst, *synclst;
 	comb_loc_rem(
-		to_dirlst("."),
+		to_dirlst(argv[2]),
 		lst,
 		&loclst,
 		&remlst,
@@ -76,4 +76,12 @@ int main(int argc, char *argv[])
 	print_dirlst(synclst);
 
 	return 0;
+}
+
+// int main_sync(int argc, char ** argv) {
+
+// }
+
+int cl_connect() {
+
 }
