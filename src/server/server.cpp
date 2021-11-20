@@ -20,6 +20,7 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 		errExit("read sv_op");
 	}
 	
+	printf("sv_op : %llu\n", sv_op);
 	switch(sv_op) {
 		case OP_SV_DIRLST:
 			if (sv_dirlst(cfd) < 0){
@@ -27,18 +28,14 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 				errExit("sv_dirlst fail");
 			}
 			break;
-		// case OP_SV_FILE:
-		// 	if (sv_file(cfd) < 0) {
-		// 		free(claddr);
-		// 		errExit("sv_file fail");
-		// 	}
-		// 	break;
+
 		case OP_SV_SYNC_DOWNLOAD:
 			if (sv_sync_download(cfd) < 0) {
 				free(claddr);
 				errExit("sv_sync_download fail");
 			}
 			break;
+			
 		default:
 			free(claddr);
 			errExit("invalid server opcode");
@@ -85,6 +82,7 @@ int sv_sync_download(int cfd) {
 	if (bi_sync_read(cfd, &pathnames, &numfiles) < 0)
 		errExit("sync_read fails");
 	
+	printf("numfiles : %u\n", numfiles);
 	// print the received pathnames
 	for (size_t n = 0; n < numfiles; ++n) {
 		printf("%s\n", pathnames[n]);
