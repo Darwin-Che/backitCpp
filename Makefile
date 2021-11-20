@@ -1,5 +1,5 @@
 CC = g++ --std=c++14
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Wall -Iinclude -g
 
 HEADER = $(wildcard include/*)
 

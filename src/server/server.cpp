@@ -27,6 +27,12 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 				errExit("sv_dirlst fail");
 			}
 			break;
+		case OP_SV_FILE:
+			if (sv_file(cfd) < 0) {
+				free(claddr);
+				errExit("sv_file fail");
+			}
+			break;
 		default:
 			free(claddr);
 			errExit("invalid server opcode");
@@ -64,5 +70,36 @@ int sv_dirlst(int cfd) {
 			errExit("write newline");
 	}
 
+	return 0;
+}
+
+int sv_file(int cfd) {
+	char pathname[PATH_MAX]; // big stack allocation
+	struct stat st;
+	size_t filesz;
+	ssize_t sendsz;
+	off_t fileoffs;
+	int ffd;
+
+	if (readLine(cfd, pathname, PATH_MAX) <= 0) {
+		close(cfd);
+	}
+
+	memset(&st, 0x0, sizeof(st));
+	if (stat(pathname, &st) == -1) 
+		errExit("sv_file : cannot stat file");
+	
+	ffd = open(pathname, O_RDONLY);
+	if (ffd < 0)
+		errExit("sv_file : cannot read file");
+
+	filesz = st.st_size;
+	write64b(cfd, filesz);
+
+	sendsz = sendfile(cfd, ffd, &fileoffs, filesz);
+	if (sendsz < 0 || (size_t) sendsz != filesz) 
+		errExit("sv_file : tranmission error");
+	
+	close(cfd);
 	return 0;
 }

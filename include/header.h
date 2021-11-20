@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 
 #ifdef __APPLE__
 #include <sys/syslimits.h>
@@ -16,11 +17,13 @@
 
 #ifdef __unix__
 #include <limits.h>
+#include <sys/sendfile.h>
 #endif
 
 #define PORT_NUM 50002
 
 #define OP_SV_DIRLST	0x0001
+#define OP_SV_FILE		0x0002
 
 #define prtime(s, t) strftime(s, 30, "%c", localtime((time_t *)t))
 

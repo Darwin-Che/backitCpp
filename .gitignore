@@ -1,5 +1,7 @@
 *.o
-.vscode
+.vscode/
 server
+!server/
 client
+!client/
 
