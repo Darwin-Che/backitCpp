@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
 	if (connect(sfd, (struct sockaddr*) &svaddr, sizeof(struct sockaddr_in)) == -1)
 		errExit("connect");
 
+	if (write64b(sfd, OP_SV_DIRLST) < 0) 
+		errExit("failed write sv op");
+
 	if (write(sfd, argv[2], strlen(argv[2])) != strlen(argv[2]))
 		errExit("failed write pathname");
 	if (write(sfd, "\n", 1) != 1)

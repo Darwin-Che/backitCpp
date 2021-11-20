@@ -20,6 +20,8 @@
 
 #define PORT_NUM 50002
 
+#define OP_SV_DIRLST	0x0001
+
 #define prtime(s, t) strftime(s, 30, "%c", localtime((time_t *)t))
 
 // UTILITIES

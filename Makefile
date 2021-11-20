@@ -16,7 +16,7 @@ CLIENT_CPP = $(filter %.cpp, $(CLIENT_SRC))
 CLIENT_OBJ = $(patsubst %.cpp, %.o, $(CLIENT_CPP))
 
 server : $(HEADER) $(SERVER_OBJ) $(COMMON_OBJ)
-	$(CC) $(CFLAGS) $(SERVER_OBJ) $(COMMON_OBJ) -o server
+	$(CC) $(CFLAGS) -lpthread $(SERVER_OBJ) $(COMMON_OBJ) -o server
 
 
 client :$(HEADER) $(CLIENT_OBJ) $(COMMON_OBJ)
