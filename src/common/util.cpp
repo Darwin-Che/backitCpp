@@ -11,7 +11,7 @@ void errExit(const char * msg) {
  */
 ssize_t bi_readn(int fd, void * buffer, size_t sz) {
 	char * buf = (char *) buffer;
-	ssize_t totRead;
+	ssize_t totRead = 0;
 	ssize_t numRead;
 
 	if (buf == NULL) {
@@ -47,7 +47,7 @@ ssize_t bi_readn(int fd, void * buffer, size_t sz) {
  */
 ssize_t bi_writen(int fd, const void * buffer, size_t sz) {
 	char * buf = (char *) buffer;
-	ssize_t totWrite;
+	ssize_t totWrite = 0;
 	ssize_t numWrite;
 
 	if (buf == NULL) {
