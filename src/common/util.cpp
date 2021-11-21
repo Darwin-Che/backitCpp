@@ -9,7 +9,7 @@ void errExit(const char * msg) {
  * -1 : fails
  * >=0  : number of bytes read
  */
-ssize_t bi_readn(int fd, void * buffer, size_t sz) {
+ssize_t bi_readn(int fd, void * buffer, size_t sz, size_t perlimit) {
 	char * buf = (char *) buffer;
 	ssize_t totRead = 0;
 	ssize_t numRead;
@@ -19,8 +19,11 @@ ssize_t bi_readn(int fd, void * buffer, size_t sz) {
 		return -1;
 	}
 
+	if (perlimit <= 0)
+		perlimit = sz;
+
 	while (sz > 0) {
-		numRead = read(fd, buf, sz);
+		numRead = read(fd, buf, std::min(sz, perlimit));
 
 		if (numRead == -1) {
 			if (errno == EINTR)
@@ -45,7 +48,7 @@ ssize_t bi_readn(int fd, void * buffer, size_t sz) {
  * -1 : fails
  * >=0  : number of bytes written
  */
-ssize_t bi_writen(int fd, const void * buffer, size_t sz) {
+ssize_t bi_writen(int fd, const void * buffer, size_t sz, size_t perlimit) {
 	char * buf = (char *) buffer;
 	ssize_t totWrite = 0;
 	ssize_t numWrite;
@@ -55,8 +58,11 @@ ssize_t bi_writen(int fd, const void * buffer, size_t sz) {
 		return -1;
 	}
 
+	if (perlimit <= 0)
+		perlimit = sz;
+
 	while (sz > 0) {
-		numWrite = write(fd, buf, sz);
+		numWrite = write(fd, buf, std::min(sz, perlimit));
 
 		if (numWrite == -1) {
 			if (errno == EINTR)
@@ -227,10 +233,124 @@ int bi_sync_write(int fd, char const * const * filenames, size_t numfiles) {
 	return 0;
 }
 
-// int bi_files_read(int fd) {
+int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uint64_t out_bufsz) {
+	unsigned sbuf_shift, dbuf_shift;
+	char * buffer;
+	uint64_t bufsz, worksz; // the data sz in the buffer; = min(bufsz, sz)
 
-// }
+	// find the biggest power of 2 that is <= bufsz
+	for (sbuf_shift = 1; (1 << sbuf_shift) <= in_bufsz; ++sbuf_shift);
+	--sbuf_shift;
+	in_bufsz = 1 << sbuf_shift;
+	for (dbuf_shift = 1; (1 << dbuf_shift) <= out_bufsz; ++dbuf_shift);
+	--dbuf_shift;
+	out_bufsz = 1 << dbuf_shift;
+	
+	printf("in_bufsz : %llu, out_bufsz : %llu.\n", in_bufsz, out_bufsz);
 
-// int bi_files_write(int fd) {
+	// create a buffer equal to the bigger of them
+	bufsz = std::max(in_bufsz, out_bufsz);
+	buffer = new char[bufsz];
 
-// }
+	while (sz < 0) {
+		worksz = std::min(sz, bufsz);
+
+		// copy into buffer
+		if (bi_readn(in_fd, buffer, worksz, in_bufsz) < 0)
+			errExit("bi_readn fails");
+		
+		// copy out of buffer
+		if (bi_writen(out_fd, buffer, worksz, out_bufsz) < 0)
+			errExit("bi_writen fails");
+
+		sz -= worksz;
+	}
+
+	delete[] buffer;
+	return 0;
+}
+
+int bi_disk_to_socket(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uint64_t out_bufsz) {
+#ifdef __unix__
+	off_t fileoffset;
+	if (sendfile(out_fd, in_fd, &fileoffset, sz) != sz)
+		errExit("sendfile partial");
+
+#elif __APPLE__
+#include <sys/syslimits.h>
+	off_t fileoffset = sz;
+	if (sendfile(in_fd, out_fd, 0, &fileoffset, NULL, 0) == -1) 
+		errExit("sendfile fails");
+	if (fileoffset != sz)
+		errExit("sendfile partial");
+
+#else
+	errExit("sendfile not supported");
+
+#endif
+	return 0;
+}
+
+int bi_files_read(int fd) {
+	uint64_t numfiles;
+	uint64_t mtime;
+	uint64_t filesz;
+	char pathname[PATH_MAX + 1];
+	int filefd;
+
+	if (read64b(fd, &numfiles) < 0) 
+		errExit("read numfiles");
+	
+	for (uint64_t n = 0; n < numfiles; ++n) {
+		if (readLine(fd, pathname, sizeof(pathname)) <= 0) 
+			errExit("read pathname");
+		
+		if (read64b(fd, &mtime) < 0) 
+			errExit("read mtime");
+		
+		if (read64b(fd, &filesz) < 0)
+			errExit("read filesz");
+		
+		filefd = open("tmp_download", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+
+		if (filefd == -1)
+			errExit("creating tmp download file");
+		
+		if (bi_socket_to_disk(fd, filefd, filesz) < 0)
+			errExit("downloading the file");
+		
+		close(filefd);
+	}
+
+	return 0;
+}
+
+int bi_files_write(int fd, char const * const * filenames, size_t numfiles) {
+	struct stat st;
+	int filefd;
+	off_t fileoffset;
+
+	if (write64b(fd, numfiles) < 0) {
+		return -1;
+	}
+	for (unsigned n = 0; n < numfiles; ++n) {
+		if (bi_writen(fd, filenames[n], strlen(filenames[n])) < 0 ||
+				bi_writen(fd, "\n", 1) < 0)
+			return -1;
+		
+		memset(&st, 0x0, sizeof(struct stat));
+		if (stat(filenames[n], &st) == -1)
+			errExit("stat the file");
+		if (write64b(fd, st.st_mtime) < 0)
+			errExit("write the mtime");
+		if (write64b(fd, st.st_size) < 0)
+			errExit("write the filesz");
+		
+		filefd = open(filenames[n], O_RDONLY);
+		fileoffset = 0;
+		if (bi_disk_to_socket(filefd, fd, st.st_size) < 0)
+			errExit("upload the file");
+		
+	}
+	return 0;
+}

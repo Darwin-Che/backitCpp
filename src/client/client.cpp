@@ -101,5 +101,8 @@ int cl_sync_download(int argc, char ** argv) {
 	if (bi_sync_write(cfd, pathnames, numfiles) < 0)
 		errExit("bi_sync_write fail");
 
+	if (bi_files_read(cfd) < 0)
+		errExit("bi_files_read fail");
+
 	return 0;
 }
