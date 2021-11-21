@@ -236,6 +236,7 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uin
 	unsigned sbuf_shift, dbuf_shift;
 	char * buffer;
 	uint64_t bufsz, worksz; // the data sz in the buffer; = min(bufsz, sz)
+	ssize_t res;
 
 	// find the biggest power of 2 that is <= bufsz
 	for (sbuf_shift = 1; (1U << sbuf_shift) <= in_bufsz; ++sbuf_shift);
@@ -251,15 +252,16 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uin
 	bufsz = std::max(in_bufsz, out_bufsz);
 	buffer = new char[bufsz];
 
-	while (sz < 0) {
+	while (sz > 0) {
 		worksz = std::min(sz, bufsz);
 
 		// copy into buffer
-		if (bi_readn(in_fd, buffer, worksz, in_bufsz) < 0)
+		if ((res = bi_readn(in_fd, buffer, worksz, in_bufsz)) < 0)
 			errExit("bi_readn fails");
 		
 		// copy out of buffer
-		if (bi_writen(out_fd, buffer, worksz, out_bufsz) < 0)
+		
+		if ((res = bi_writen(out_fd, buffer, worksz, out_bufsz)) < 0)
 			errExit("bi_writen fails");
 
 		sz -= worksz;
@@ -316,6 +318,7 @@ int bi_files_read(int fd) {
 		if (filefd == -1)
 			errExit("creating tmp download file");
 		
+		printf("writing to file %s : %llu bytes\n", pathname, filesz);
 		if (bi_socket_to_disk(fd, filefd, filesz) < 0)
 			errExit("downloading the file");
 		

@@ -19,7 +19,7 @@ int cl_connect() {
 	if (connect(cfd, (struct sockaddr*) &svaddr, sizeof(struct sockaddr_in)) == -1)
 		errExit("connect");
 	
-	printf("cl_connect succeed : cfd = %d\n", cfd);
+	printf("cl_connect succeed!\n");
 	return cfd;
 }
 
@@ -88,7 +88,7 @@ int cl_ls(int argc, char ** argv) {
 int cl_sync_download(int argc, char ** argv) {
 	int cfd = cl_connect();
 	
-	ssize_t numfiles = 3;
+	ssize_t numfiles = 1;
 	const char * pathnames[] = {
 		"docs/comm.txt",
 	};
