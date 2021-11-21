@@ -5,6 +5,137 @@ void errExit(const char * msg) {
 	exit(1);
 }
 
+/* Return -1 for error, strlen of return path for success
+ * Modify the input path directly
+ *
+ * Operate on one component at a time: 
+ * 1. compress consecutive / into one /
+ * 2. remove the . component
+ * 3. remove the xx/.. component
+ * 4. remove trailing /
+ */
+#define IS_CPNEND(c) (c == '/' || c == '\0')
+ssize_t canon_abspath(char * path) {
+	// r always points to '/'
+	size_t w = 0, r = 0, e; // write pos, read pos, read cpn end pos
+	while (path[r]) {
+		// e = end of read component
+		for (e = r+1; ! IS_CPNEND(path[e]); ++e);
+
+		if (e == r+1) { 
+			// if the component is empty
+			// do nothing
+
+		} else if (e == r+2 && path[r+1] == '.') { 
+			// if the component is equal to '.'
+			// do nothing
+
+		} else if (e == r+3 && path[r+1] == '.' && path[r+2] == '.') { 
+			// if the component is equal to '..'
+			for (--w; path[w] != '/'; --w) {
+				if (w < 0) 
+					errExit("invalid path -- \'..\'");
+			}
+
+		} else {
+			memcpy(&path[w], &path[r], e-r);
+			w += e-r;
+		}
+		
+		r = e;
+	}
+	// the result is empty
+	if (w == 0)
+		path[w++] = '/';
+
+	path[w] = '\0';
+
+	return w;
+}
+
+/* Convert any path into an absolute path and return it
+ * The result doesn't contain . or .., and doesn't expand symbolic link
+ * caller shall free the return string
+ */
+char * normalize_path(const char * input) {
+	char * output = new char[PATH_MAX + 1];
+	size_t input_len = strlen(input); // input len
+	const char * input_pos = input; // position to read
+	char * output_pos = output; // position to write
+	size_t output_len = PATH_MAX + 1; // length left in output 
+	ssize_t canon_len;
+	size_t lentmp;
+
+	// if input is relative path, then add curdir in the front
+	if (input[0] != '/') {
+		if (getcwd(output_pos, output_len) == NULL)
+			errExit("cwd fail");
+		lentmp = strlen(output_pos);
+		output_pos += lentmp; output_len -= lentmp;
+	}
+	strcpy(output_pos, "/");
+	output_pos += 1; output_len -= 1;
+
+	strcpy(output_pos, input_pos);
+	output_pos += input_len; output_len -= input_len;
+
+	// canonicalize the absolute path
+	canon_len = canon_abspath(output);
+
+	return output;
+}
+
+/* Given an absolute path, find closest ancestor that is a backit repo
+ * Return nullptr if fail
+ * Return a heap allocated string containing the relative path to that ancestor
+ * Modify the input so that the input is the path to that ancestor
+ */
+char * bi_repopath(char * abspath) {
+	char * ret = new char[PATH_MAX + 1]; // use ret temporarily for constructing paths
+	strcpy(ret, abspath);
+	size_t e = strlen(abspath); // the strlen absolute path
+	struct stat st;
+
+	while (e >= 0) {
+		ret[e] = '/';
+		strcpy(&ret[e+1], META_DIR);
+		memset(&st, 0x0, sizeof(struct stat));
+		if (stat(ret, &st) != -1)
+			break;
+		
+		if (e == 0) {
+			// already checked all of ancestors
+			delete[] ret;
+			return nullptr;
+		}
+
+		while (--e >= 0 && ret[e] != '/') ;
+	}
+
+	if (e < 0) {
+		delete[] ret;
+		return nullptr;
+	}
+
+	// Populate abspath and ret
+
+	if (e == strlen(abspath)) {
+		// Special Case : ancestor is abspath
+		strcpy(ret, ".");
+	} else {
+		strcpy(ret, &abspath[e+1]);
+	}
+
+	if (e == 0) {
+		// Special Case : ancestor is '/'
+		abspath[e+1] = '\0';
+	} else {
+		abspath[e] = '\0';
+	}
+
+	return ret;
+}
+
 /* Return values:
  * -1 : fails
  * >=0  : number of bytes read
@@ -313,10 +444,10 @@ int bi_files_read(int fd) {
 		if (read64b(fd, &filesz) < 0)
 			errExit("read filesz");
 		
-		filefd = open("tmp_download", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+		filefd = open(pathname, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
 
 		if (filefd == -1)
-			errExit("creating tmp download file");
+			errExit("cannot open file");
 		
 		printf("writing to file %s : %llu bytes\n", pathname, filesz);
 		if (bi_socket_to_disk(fd, filefd, filesz) < 0)

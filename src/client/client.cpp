@@ -89,9 +89,8 @@ int cl_sync_download(int argc, char ** argv) {
 	int cfd = cl_connect();
 	
 	ssize_t numfiles = 1;
-	const char * pathnames[] = {
-		"docs/comm.txt",
-	};
+	char * pathnames[1];
+	pathnames[0] = argv[1];
 
 	if (write64b(cfd, OP_SV_SYNC_DOWNLOAD) < 0) 
 		errExit("failed write sv op");

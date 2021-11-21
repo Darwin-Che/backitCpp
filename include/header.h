@@ -27,11 +27,19 @@
 // #define OP_SV_FILE		0x0002
 #define OP_SV_SYNC_DOWNLOAD	0x0004
 
+#define META_DIR	".backit"
+
 #define prtime(s, t) strftime(s, 30, "%c", localtime((time_t *)t))
 
 // Utils
 
 void errExit(const char * msg);
+
+ssize_t canon_abspath(char * path);
+
+char * normalize_path(const char * input);
+
+char * bi_repopath(char * abspath);
 
 ssize_t bi_readn(int fd, void * buf, size_t sz, size_t perlimit = 0);
 
