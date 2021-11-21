@@ -198,7 +198,6 @@ int bi_sync_read(int fd, char*** filenames, size_t* numfiles) {
 	if (numfiles == nullptr)
 		return -1;
 
-
 	if (read64b(fd, &nf) < 0)
 		return -1;
 	
@@ -272,7 +271,7 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uin
 
 int bi_disk_to_socket(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uint64_t out_bufsz) {
 #ifdef __unix__
-	off_t fileoffset;
+	off_t fileoffset = 0;
 	ssize_t numsent = sendfile(out_fd, in_fd, &fileoffset, sz);
 	if (numsent < 0 || (uint64_t) numsent != sz)
 		errExit("sendfile partial");
