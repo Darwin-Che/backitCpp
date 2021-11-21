@@ -239,10 +239,10 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uin
 	uint64_t bufsz, worksz; // the data sz in the buffer; = min(bufsz, sz)
 
 	// find the biggest power of 2 that is <= bufsz
-	for (sbuf_shift = 1; (1 << sbuf_shift) <= in_bufsz; ++sbuf_shift);
+	for (sbuf_shift = 1; (1U << sbuf_shift) <= in_bufsz; ++sbuf_shift);
 	--sbuf_shift;
 	in_bufsz = 1 << sbuf_shift;
-	for (dbuf_shift = 1; (1 << dbuf_shift) <= out_bufsz; ++dbuf_shift);
+	for (dbuf_shift = 1; (1U << dbuf_shift) <= out_bufsz; ++dbuf_shift);
 	--dbuf_shift;
 	out_bufsz = 1 << dbuf_shift;
 	
@@ -273,7 +273,8 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uin
 int bi_disk_to_socket(int in_fd, int out_fd, uint64_t sz, uint64_t in_bufsz, uint64_t out_bufsz) {
 #ifdef __unix__
 	off_t fileoffset;
-	if (sendfile(out_fd, in_fd, &fileoffset, sz) != sz)
+	ssize_t numsent = sendfile(out_fd, in_fd, &fileoffset, sz);
+	if (numsent < 0 || (uint64_t) numsent != sz)
 		errExit("sendfile partial");
 
 #elif __APPLE__
@@ -328,7 +329,6 @@ int bi_files_read(int fd) {
 int bi_files_write(int fd, char const * const * filenames, size_t numfiles) {
 	struct stat st;
 	int filefd;
-	off_t fileoffset;
 
 	if (write64b(fd, numfiles) < 0) {
 		return -1;
@@ -347,7 +347,6 @@ int bi_files_write(int fd, char const * const * filenames, size_t numfiles) {
 			errExit("write the filesz");
 		
 		filefd = open(filenames[n], O_RDONLY);
-		fileoffset = 0;
 		if (bi_disk_to_socket(filefd, fd, st.st_size) < 0)
 			errExit("upload the file");
 		

@@ -35,7 +35,7 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 				errExit("sv_sync_download fail");
 			}
 			break;
-			
+
 		default:
 			free(claddr);
 			errExit("invalid server opcode");
@@ -87,6 +87,9 @@ int sv_sync_download(int cfd) {
 	for (size_t n = 0; n < numfiles; ++n) {
 		printf("%s\n", pathnames[n]);
 	}
+
+	if (bi_files_write(cfd, pathnames, numfiles) < 0)
+		errExit("files_write fails");
 
 	return 0;
 }
