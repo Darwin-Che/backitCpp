@@ -90,9 +90,7 @@ int cl_sync_download(int argc, char ** argv) {
 	
 	ssize_t numfiles = 3;
 	const char * pathnames[] = {
-		"abcd",
-		"edfg",
-		"hijk",
+		"docs/comm.txt",
 	};
 
 	if (write64b(cfd, OP_SV_SYNC_DOWNLOAD) < 0) 
