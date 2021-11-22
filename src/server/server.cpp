@@ -1,5 +1,7 @@
 #include "server.h"
 
+char REPOABS[PATH_MAX];
+
 /* The entry point from the loop of the server
  * Procondition : cfd and claddr and len are valid
  * Need to free the heap allocated claddr
@@ -57,6 +59,8 @@ int sv_dirlst(int cfd) {
 		close(cfd);
 	}
 
+	printf("pathname : %s\n", pathname);
+	bi_pathcombine(pathname, REPOABS);
 	printf("pathname : %s\n", pathname);
 	dl = to_dirlst(pathname);
 	if (write64b(cfd, dl->len) < 0)
