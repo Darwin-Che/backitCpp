@@ -57,13 +57,14 @@ ssize_t canon_abspath(char * path) {
  * The result doesn't contain . or .., and doesn't expand symbolic link
  * caller shall free the return string
  */
-char * normalize_path(const char * input) {
-	char * output = new char[PATH_MAX + 1];
+char * normalize_path(const char * input, char * output) {
+	if (output == nullptr) {
+		output = new char[PATH_MAX];
+	}
 	size_t input_len = strlen(input); // input len
 	const char * input_pos = input; // position to read
 	char * output_pos = output; // position to write
-	size_t output_len = PATH_MAX + 1; // length left in output 
-	ssize_t canon_len;
+	size_t output_len = PATH_MAX; // length left in output 
 	size_t lentmp;
 
 	// if input is relative path, then add curdir in the front
@@ -80,7 +81,8 @@ char * normalize_path(const char * input) {
 	output_pos += input_len; output_len -= input_len;
 
 	// canonicalize the absolute path
-	canon_len = canon_abspath(output);
+	if (canon_abspath(output) < 0)
+		errExit("canon_abspath fail");
 
 	return output;
 }
@@ -136,6 +138,15 @@ char * bi_repopath(char * abspath, bool set_repoabs) {
 	}
 	
 	return ret;
+}
+
+void bi_pathcombine(char * path, const char * prefix) {
+	size_t pathlen = strlen(path);
+	size_t prefixlen = strlen(prefix);
+
+	memcpy(&path[prefixlen + 1], &path[0], pathlen);
+	memcpy(&path[0], &prefix[0], prefixlen);
+	path[prefixlen] = '/';
 }
 
 /* Return values:

@@ -5,6 +5,8 @@
 #include "header.h"
 #include "dentry.h"
 
+extern char REPOABS[PATH_MAX];
+
 int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen);
 int sv_dirlst(int cfd);
 // int sv_file(int cfd);

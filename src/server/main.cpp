@@ -10,6 +10,16 @@ int main(int argc, char *argv[])
 	int sfd, optval, cfd;
 	socklen_t cllen;
 
+	// Initialize REPO
+
+	if (argc > 1) {
+		normalize_path(argv[1], REPOABS);
+	} else {
+		normalize_path(".", REPOABS);
+	}
+
+	// Initialize Socket
+
 	sfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sfd == -1)
 		errExit("socket");
