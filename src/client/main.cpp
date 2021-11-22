@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
 	} else if (strcmp(argv[1], "path") == 0) {
 		char * x = normalize_path(argv[2]);
-		char * y = bi_repopath(x);
+		char * y = bi_repopath(x, 1);
 		printf("ancestor : %s\n", x);
 		printf("repopath : %s\n", y);
 		delete[] x;

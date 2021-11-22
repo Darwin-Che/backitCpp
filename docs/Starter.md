@@ -14,6 +14,10 @@ The key is the remote files must have proper mtime to denote the last sync with 
 
 # Data format when tranfering over internet (byte streams)
 
+Always use the `reporel` when transferring the fname
+Let the program figure out `repoabs`, and then concatenate to get `fsabs`.
+
+
 # Directory list
 
 ```

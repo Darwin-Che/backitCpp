@@ -39,7 +39,7 @@ ssize_t canon_abspath(char * path);
 
 char * normalize_path(const char * input);
 
-char * bi_repopath(char * abspath);
+char * bi_repopath(char * abspath, bool set_repoabs = false);
 
 ssize_t bi_readn(int fd, void * buf, size_t sz, size_t perlimit = 0);
 

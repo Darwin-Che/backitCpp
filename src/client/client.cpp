@@ -26,7 +26,10 @@ int cl_connect() {
 int cl_ls(int argc, char ** argv) {
 	int cfd = cl_connect();
 
-	char * rel_path = argv[1];
+	char * fsabs = normalize_path(argv[1]);
+	printf("File system abs path : %s\n", fsabs);
+	char * reporel = bi_repopath(fsabs);
+	printf("reporel : %s\n", reporel);
 	ssize_t numRead;
 	dirlst_t * lst = new dirlst_t;
 	mdirent_t ** mdp = &lst->head;
@@ -35,7 +38,7 @@ int cl_ls(int argc, char ** argv) {
 	if (write64b(cfd, OP_SV_DIRLST) < 0) 
 		errExit("failed write sv op");
 
-	if (write(cfd, rel_path, strlen(rel_path)) != strlen(rel_path))
+	if (write(cfd, reporel, strlen(reporel)) != strlen(reporel))
 		errExit("failed write pathname");
 	if (write(cfd, "\n", 1) != 1)
 		errExit("failed write newline");
@@ -67,7 +70,7 @@ int cl_ls(int argc, char ** argv) {
 
 	dirlst_t *loclst, *remlst, *synclst;
 	comb_loc_rem(
-		to_dirlst(rel_path),
+		to_dirlst(fsabs),
 		lst,
 		&loclst,
 		&remlst,

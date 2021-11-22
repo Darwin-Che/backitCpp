@@ -90,7 +90,7 @@ char * normalize_path(const char * input) {
  * Return a heap allocated string containing the relative path to that ancestor
  * Modify the input so that the input is the path to that ancestor
  */
-char * bi_repopath(char * abspath) {
+char * bi_repopath(char * abspath, bool set_repoabs) {
 	char * ret = new char[PATH_MAX + 1]; // use ret temporarily for constructing paths
 	strcpy(ret, abspath);
 	size_t e = strlen(abspath); // the strlen absolute path
@@ -126,13 +126,15 @@ char * bi_repopath(char * abspath) {
 		strcpy(ret, &abspath[e+1]);
 	}
 
-	if (e == 0) {
-		// Special Case : ancestor is '/'
-		abspath[e+1] = '\0';
-	} else {
-		abspath[e] = '\0';
+	if (set_repoabs) {
+		if (e == 0) {
+			// Special Case : ancestor is '/'
+			abspath[e+1] = '\0';
+		} else {
+			abspath[e] = '\0';
+		}
 	}
-
+	
 	return ret;
 }
 
