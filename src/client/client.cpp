@@ -90,10 +90,20 @@ int cl_ls(int argc, char ** argv) {
 
 int cl_sync_download(int argc, char ** argv) {
 	int cfd = cl_connect();
-	
-	ssize_t numfiles = 1;
-	char * pathnames[1];
-	pathnames[0] = argv[1];
+
+	size_t numfiles = argc - 1;
+	char ** pathnames = new char*[numfiles];
+
+	char * fsabs;
+	char * reporel;
+	for (size_t n = 0; n < numfiles; ++n) {
+		fsabs = normalize_path(argv[n+1]);
+		printf("File system abs path : %s\n", fsabs);
+		reporel = bi_repopath(fsabs);
+		printf("reporel : %s\n", reporel);
+		pathnames[n] = reporel;
+		delete[] fsabs;
+	}
 
 	if (write64b(cfd, OP_SV_SYNC_DOWNLOAD) < 0) 
 		errExit("failed write sv op");
