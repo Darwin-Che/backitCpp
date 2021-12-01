@@ -28,7 +28,7 @@ repeatedly.
 
 # Files
 
-## Sync 
+## Paths 
 
 ```
 {num_files_64}
@@ -49,3 +49,4 @@ Each file
 {time_64}{filesz_64}{content}
 
 ```
+

@@ -38,6 +38,12 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 			}
 			break;
 
+		case OP_SV_REMOVE_FILES:
+			if (sv_remove_files(cfd) < 0) {
+				errExit("sv_remove_files fail");
+			}
+			break;
+
 		default:
 			free(claddr);
 			errExit("invalid server opcode");
@@ -97,6 +103,43 @@ int sv_sync_download(int cfd) {
 
 	return 0;
 }
+
+int sv_remove_files(int cfd) {
+	char ** pathnames;
+	size_t numfiles;
+	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
+		errExit("sync_read fails");
+	
+	printf("numfiles : %u\n", numfiles);
+	// print the received pathnames
+	for (size_t n = 0; n < numfiles; ++n) {
+		printf("%s\n", pathnames[n]);
+	}
+
+	char ** rmpaths = new char*[numfiles];
+	size_t rmcnt = 0;
+
+	for (size_t n = 0; n < numfiles; ++n) {
+		if (remove(pathnames[n]) < 0) {
+			continue;
+		} else {
+			rmpaths[rmcnt] = pathnames[n];
+			++rmcnt;
+		}
+	}
+
+	printf("rmcnt : %u\n", rmcnt);
+	// print the received pathnames
+	for (size_t n = 0; n < rmcnt; ++n) {
+		printf("%s\n", rmpaths[n]);
+	}
+
+	if (bi_paths_write(cfd, rmpaths, rmcnt) < 0) 
+		errExit("paths_write");
+	
+	return 0;
+}
+
 
 #if 0
 int sv_file(int cfd) {
