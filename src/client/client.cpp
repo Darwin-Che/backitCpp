@@ -13,7 +13,7 @@ int cl_connect() {
 	memset(&svaddr, 0, sizeof(struct sockaddr_in));
 	svaddr.sin_family = AF_INET;
 	svaddr.sin_port = htons(PORT_NUM);
-	if (inet_pton(AF_INET, "192.168.2.23", &svaddr.sin_addr) <= 0)
+	if (inet_pton(AF_INET, "192.168.2.25", &svaddr.sin_addr) <= 0)
 		errExit("fail translate address");
 
 	if (connect(cfd, (struct sockaddr*) &svaddr, sizeof(struct sockaddr_in)) == -1)
@@ -139,16 +139,6 @@ int cl_rm(int argc, char ** argv) {
 
 	if (bi_paths_write(cfd, pathnames, numfiles) < 0)
 		errExit("bi_paths_write fail");
-
-	uint64_t resp;
-	if (read64b(cfd, &resp) < 0)
-		errExit("bi_files_read fail");
-
-	if (resp == 0) {
-		printf("File remove success!\n");
-	} else {
-		printf("File remove failed!\n");
-	}
 	
 	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
 		errExit("paths_read fails");
