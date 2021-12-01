@@ -336,7 +336,7 @@ int write64b(int fd, uint64_t data) {
  * -1 : fails
  * 0 : success
  */
-int bi_sync_read(int fd, char*** filenames, size_t* numfiles) {
+int bi_paths_read(int fd, char*** filenames, size_t* numfiles) {
 	uint64_t nf;
 	
 	if (numfiles == nullptr)
@@ -364,7 +364,7 @@ int bi_sync_read(int fd, char*** filenames, size_t* numfiles) {
  * -1 : fails
  * 0 : success
  */
-int bi_sync_write(int fd, char const * const * filenames, size_t numfiles) {
+int bi_paths_write(int fd, char const * const * filenames, size_t numfiles) {
 	if (write64b(fd, numfiles) < 0) {
 		return -1;
 	}

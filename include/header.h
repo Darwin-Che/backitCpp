@@ -23,9 +23,9 @@
 
 #define PORT_NUM 50002
 
-#define OP_SV_DIRLST	0x0001
-// #define OP_SV_FILE		0x0002
-#define OP_SV_SYNC_DOWNLOAD	0x0004
+#define OP_SV_DIRLST			0x0001
+#define OP_SV_REMOVE_FILES		0x0002
+#define OP_SV_SYNC_DFILES		0x0004
 
 #define META_DIR	".backit"
 
@@ -59,9 +59,9 @@ int bi_socket_to_disk(int in_fd, int out_fd, uint64_t sz,
 int bi_disk_to_socket(int in_fd, int out_fd, uint64_t sz, 
 		uint64_t in_bufsz = 4096, uint64_t out_bufsz = 1024);
 
-int bi_sync_read(int fd, char*** filenames, size_t* numfiles);
+int bi_paths_read(int fd, char*** filenames, size_t* numfiles);
 
-int bi_sync_write(int fd, char const * const * filenames, size_t numfiles);
+int bi_paths_write(int fd, char const * const * filenames, size_t numfiles);
 
 int bi_files_read(int fd);
 

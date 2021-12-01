@@ -105,14 +105,58 @@ int cl_sync_download(int argc, char ** argv) {
 		delete[] fsabs;
 	}
 
-	if (write64b(cfd, OP_SV_SYNC_DOWNLOAD) < 0) 
+	if (write64b(cfd, OP_SV_SYNC_DFILES) < 0) 
 		errExit("failed write sv op");
 
-	if (bi_sync_write(cfd, pathnames, numfiles) < 0)
-		errExit("bi_sync_write fail");
+	if (bi_paths_write(cfd, pathnames, numfiles) < 0)
+		errExit("bi_paths_write fail");
 
 	if (bi_files_read(cfd) < 0)
 		errExit("bi_files_read fail");
+
+	return 0;
+}
+
+int cl_rm(int argc, char ** argv) {
+	int cfd = cl_connect();
+
+	size_t numfiles = argc - 1;
+	char ** pathnames = new char*[numfiles];
+
+	char * fsabs;
+	char * reporel;
+	for (size_t n = 0; n < numfiles; ++n) {
+		fsabs = normalize_path(argv[n+1]);
+		printf("File system abs path : %s\n", fsabs);
+		reporel = bi_repopath(fsabs);
+		printf("reporel : %s\n", reporel);
+		pathnames[n] = reporel;
+		delete[] fsabs;
+	}
+
+	if (write64b(cfd, OP_SV_REMOVE_FILES) < 0) 
+		errExit("failed write sv op");
+
+	if (bi_paths_write(cfd, pathnames, numfiles) < 0)
+		errExit("bi_paths_write fail");
+
+	uint64_t resp;
+	if (read64b(cfd, &resp) < 0)
+		errExit("bi_files_read fail");
+
+	if (resp == 0) {
+		printf("File remove success!\n");
+	} else {
+		printf("File remove failed!\n");
+	}
+	
+	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
+		errExit("paths_read fails");
+	
+	printf("Deleted files are :\n");
+	for (size_t n = 0; n < numfiles; ++n) {
+		printf("%s\n", pathnames[n]);
+	}
 
 	return 0;
 }

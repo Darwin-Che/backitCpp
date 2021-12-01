@@ -31,7 +31,7 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 			}
 			break;
 
-		case OP_SV_SYNC_DOWNLOAD:
+		case OP_SV_SYNC_DFILES:
 			if (sv_sync_download(cfd) < 0) {
 				free(claddr);
 				errExit("sv_sync_download fail");
@@ -83,7 +83,7 @@ int sv_dirlst(int cfd) {
 int sv_sync_download(int cfd) {
 	char ** pathnames;
 	size_t numfiles;
-	if (bi_sync_read(cfd, &pathnames, &numfiles) < 0)
+	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
 		errExit("sync_read fails");
 	
 	printf("numfiles : %u\n", numfiles);

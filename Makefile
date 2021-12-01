@@ -21,6 +21,7 @@ server : $(HEADER) $(SERVER_OBJ) $(COMMON_OBJ)
 
 client :$(HEADER) $(CLIENT_OBJ) $(COMMON_OBJ)
 	$(CC) $(CFLAGS) $(CLIENT_OBJ) $(COMMON_OBJ) -o client
+	cp client test/client
 
 
 %.o : %.cpp $(HEADER)
