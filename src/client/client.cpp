@@ -105,7 +105,7 @@ int cl_sync_download(int argc, char ** argv) {
 		delete[] fsabs;
 	}
 
-	if (write64b(cfd, OP_SV_SYNC_DFILES) < 0) 
+	if (write64b(cfd, OP_SV_SYNCD_FILES) < 0) 
 		errExit("failed write sv op");
 
 	if (bi_paths_write(cfd, pathnames, numfiles) < 0)
@@ -114,6 +114,32 @@ int cl_sync_download(int argc, char ** argv) {
 	if (bi_files_read(cfd) < 0)
 		errExit("bi_files_read fail");
 
+	return 0;
+}
+
+int cl_sync_upload(int argc, char ** argv) {
+	int cfd = cl_connect();
+
+	size_t numfiles = argc - 1;
+	char ** pathnames = new char*[numfiles];
+
+	char * fsabs;
+	char * reporel;
+	for (size_t n = 0; n < numfiles; ++n) {
+		fsabs = normalize_path(argv[n+1]);
+		printf("File system abs path : %s\n", fsabs);
+		reporel = bi_repopath(fsabs);
+		printf("reporel : %s\n", reporel);
+		pathnames[n] = reporel;
+		delete[] fsabs;
+	}
+
+	if (write64b(cfd, OP_SV_SYNCU_FILES) < 0) 
+		errExit("failed write sv op");
+	
+	if (bi_files_write(cfd, pathnames, numfiles) < 0)
+		errExit("files_write fails");
+	
 	return 0;
 }
 

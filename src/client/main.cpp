@@ -18,9 +18,14 @@ int main(int argc, char *argv[])
 		if (cl_sync_download(argc - 1, argv + 1) < 0)
 			errExit("cl_sync_download fail");
 
+	} else if (strcmp(argv[1], "syncu") == 0) {
+		if (cl_sync_upload(argc - 1, argv + 1) < 0)
+			errExit("cl_sync_upload fail");
+	
 	} else if (strcmp(argv[1], "rm") == 0) {
 		if (cl_rm(argc - 1, argv + 1) < 0)
 			errExit("cl_rm fail");
+
 	} else if (strcmp(argv[1], "path") == 0) {
 		char * x = normalize_path(argv[2]);
 		char * y = bi_repopath(x, 1);

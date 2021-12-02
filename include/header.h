@@ -25,7 +25,8 @@
 
 #define OP_SV_DIRLST			0x0001
 #define OP_SV_REMOVE_FILES		0x0002
-#define OP_SV_SYNC_DFILES		0x0004
+#define OP_SV_SYNCD_FILES		0x0004
+#define OP_SV_SYNCU_FILES		0x0008
 
 #define META_DIR	".backit"
 

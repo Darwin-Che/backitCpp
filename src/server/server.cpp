@@ -31,7 +31,7 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 			}
 			break;
 
-		case OP_SV_SYNC_DFILES:
+		case OP_SV_SYNCD_FILES:
 			if (sv_sync_download(cfd) < 0) {
 				free(claddr);
 				errExit("sv_sync_download fail");
