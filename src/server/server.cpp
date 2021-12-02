@@ -38,8 +38,16 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 			}
 			break;
 
+		case OP_SV_SYNCU_FILES:
+			if (sv_sync_upload(cfd) < 0) {
+				free(claddr);
+				errExit("sv_sync_download fail");
+			}
+			break;
+
 		case OP_SV_REMOVE_FILES:
 			if (sv_remove_files(cfd) < 0) {
+				free(claddr);
 				errExit("sv_remove_files fail");
 			}
 			break;
@@ -101,6 +109,13 @@ int sv_sync_download(int cfd) {
 	if (bi_files_write(cfd, pathnames, numfiles) < 0)
 		errExit("files_write fails");
 
+	return 0;
+}
+
+int sv_sync_upload(int cfd) {
+	if (bi_files_read(cfd) < 0)
+		errExit("bi_files_read fail");
+	
 	return 0;
 }
 
