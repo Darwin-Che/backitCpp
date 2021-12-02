@@ -26,7 +26,7 @@ int cl_connect() {
 int cl_ls(int argc, char ** argv) {
 	int cfd = cl_connect();
 
-	char * fsabs = normalize_path(argv[1]);
+	char * fsabs = normalize_path(argc > 1 ? argv[1] : ".");
 	printf("File system abs path : %s\n", fsabs);
 	char * reporel = bi_repopath(fsabs);
 	printf("reporel : %s\n", reporel);

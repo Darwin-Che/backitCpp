@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/update.dir/exec/update.cpp.o CMakeFiles/update.dir/src/app.cpp.o CMakeFiles/update.dir/src/util.cpp.o CMakeFiles/update.dir/src/load.cpp.o  -o update 
