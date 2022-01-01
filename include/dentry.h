@@ -6,11 +6,11 @@
 #include <string>
 #include <cstring>
 #include <map>
+#include <vector>
 #include "header.h"
 
 // in memory struct for directory entries
 struct mdirent_t {
-	mdirent_t *	m_next;
 	int64_t		m_mtime_loc;
 	int64_t		m_mtime_rem;
 	size_t		m_name_len;
@@ -23,25 +23,20 @@ struct dirtbl_t {
 	std::map<std::string, mdirent_t *>	data;
 };
 
-struct dirlst_t {
-	size_t		len;
-	mdirent_t	* 	head;
+struct dirvec_t {
+	std::vector<mdirent_t *> arr;
 };
 
 // print dirlst
-void print_dirlst(dirlst_t * dl);
+void print_dirvec(const dirvec_t & dv);
 
-// convert into dirlst
-dirlst_t * to_dirlst(const char * pathname);
-
-// construct table
-dirtbl_t * to_dirtbl(dirlst_t *);
+dirvec_t to_dirvec(const char * pathname);
 
 void comb_loc_rem(
-		dirlst_t * inloc, 
-		dirlst_t * inrem,
-		dirlst_t ** outloc,
-		dirlst_t ** outrem,
-		dirlst_t ** synclst);
+		dirvec_t inloc, 
+		dirvec_t inrem,
+		dirvec_t * outloc,
+		dirvec_t * outrem,
+		dirvec_t * outsync);
 
 #endif

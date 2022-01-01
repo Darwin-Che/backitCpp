@@ -50,3 +50,13 @@ Each file
 
 ```
 
+# config format
+
+## local 
+
+config file is located at `.backit/config` with the following format (no comment) 
+make sure no empty lines
+
+```
+REPO_PREFIX=test/t1
+```

@@ -17,9 +17,9 @@ int cl_connect() {
 		errExit("fail translate address");
 
 	if (connect(cfd, (struct sockaddr*) &svaddr, sizeof(struct sockaddr_in)) == -1)
-		errExit("connect");
+		errExit("Cannot connect to the server. Exit...");
 	
-	printf("cl_connect succeed!\n");
+	printf("Connected to the server!\n");
 	return cfd;
 }
 
@@ -28,12 +28,12 @@ int cl_ls(int argc, char ** argv) {
 
 	char * fsabs = normalize_path(argc > 1 ? argv[1] : ".");
 	printf("File system abs path : %s\n", fsabs);
-	char * reporel = bi_repopath(fsabs);
-	printf("reporel : %s\n", reporel);
+	char * reporel = cl_getrepopath(fsabs);
+	printf("reporel : %s\nfsabs : %s\n", reporel, fsabs);
+	if (reporel == nullptr)
+		errExit("Given path is not under a repo. Exit...");
 	ssize_t numRead;
-	dirlst_t * lst = new dirlst_t;
-	mdirent_t ** mdp = &lst->head;
-
+	dirvec_t dvec;
 
 	if (write64b(cfd, OP_SV_DIRLST) < 0) 
 		errExit("failed write sv op");
@@ -47,43 +47,41 @@ int cl_ls(int argc, char ** argv) {
 	if(read64b(cfd, &totalNum) < 0)
 		errExit("read total");
 	
-	printf("Number of Entries: %llu\n", totalNum);
-	lst->len = totalNum;
+	printf("Number of Entries Recieved: %llu\n", totalNum);
 
 	uint64_t mtime_rem;
 	for (; totalNum > 0; --totalNum) {
-		*mdp = new mdirent_t;
+		mdirent_t * mdp = new mdirent_t;
 
 		if (read64b(cfd, &mtime_rem) < 0) 
 			errExit("read time");
-		(*mdp)->m_mtime_loc = (*mdp)->m_mtime_rem = mtime_rem;
+		mdp->m_mtime_loc = mdp->m_mtime_rem = mtime_rem;
 
-		numRead = readLine(cfd, (*mdp)->m_name, NAME_MAX);
+		numRead = readLine(cfd, &mdp->m_name[0], NAME_MAX);
 		if (numRead == -1)
 			errExit("readLine");
 		if (numRead == 0)
 			errExit("Unexpect EOF");
 
-		mdp = &(*mdp)->m_next;
+		dvec.arr.push_back(std::move(mdp));
 	}
-	*mdp = nullptr;
 
-	dirlst_t *loclst, *remlst, *synclst;
+	dirvec_t locvec, remvec, syncvec;
 	comb_loc_rem(
-		to_dirlst(fsabs),
-		lst,
-		&loclst,
-		&remlst,
-		&synclst);
+		to_dirvec(fsabs),
+		dvec,
+		&locvec,
+		&remvec,
+		&syncvec);
 
 	printf("LOCAL : \n");
-	print_dirlst(loclst);
+	print_dirvec(locvec);
 
 	printf("REMOTE : \n");
-	print_dirlst(remlst);
+	print_dirvec(remvec);
 
 	printf("SYNC : \n");
-	print_dirlst(synclst);
+	print_dirvec(syncvec);
 
 	return 0;
 }
@@ -99,7 +97,7 @@ int cl_sync_download(int argc, char ** argv) {
 	for (size_t n = 0; n < numfiles; ++n) {
 		fsabs = normalize_path(argv[n+1]);
 		printf("File system abs path : %s\n", fsabs);
-		reporel = bi_repopath(fsabs);
+		reporel = cl_getrepopath(fsabs);
 		printf("reporel : %s\n", reporel);
 		pathnames[n] = reporel;
 		delete[] fsabs;
@@ -128,7 +126,7 @@ int cl_sync_upload(int argc, char ** argv) {
 	for (size_t n = 0; n < numfiles; ++n) {
 		fsabs = normalize_path(argv[n+1]);
 		printf("File system abs path : %s\n", fsabs);
-		reporel = bi_repopath(fsabs);
+		reporel = cl_getrepopath(fsabs);
 		printf("reporel : %s\n", reporel);
 		pathnames[n] = reporel;
 		delete[] fsabs;
@@ -154,7 +152,7 @@ int cl_rm(int argc, char ** argv) {
 	for (size_t n = 0; n < numfiles; ++n) {
 		fsabs = normalize_path(argv[n+1]);
 		printf("File system abs path : %s\n", fsabs);
-		reporel = bi_repopath(fsabs);
+		reporel = cl_getrepopath(fsabs);
 		printf("reporel : %s\n", reporel);
 		pathnames[n] = reporel;
 		delete[] fsabs;

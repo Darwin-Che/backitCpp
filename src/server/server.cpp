@@ -66,7 +66,6 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 }
 
 int sv_dirlst(int cfd) {
-	dirlst_t * dl;
 	char pathname[PATH_MAX]; // big stack allocation
 
 	if (readLine(cfd, pathname, PATH_MAX) <= 0) {
@@ -76,11 +75,11 @@ int sv_dirlst(int cfd) {
 	printf("pathname : %s\n", pathname);
 	bi_pathcombine(pathname, REPOABS);
 	printf("pathname : %s\n", pathname);
-	dl = to_dirlst(pathname);
-	if (write64b(cfd, dl->len) < 0)
+	dirvec_t dl = to_dirvec(pathname);
+	if (write64b(cfd, dl.arr.size()) < 0)
 		errExit("write total");
 
-	for (mdirent_t * mdp = dl->head; mdp; mdp = mdp->m_next) {
+	for (mdirent_t * mdp : dl.arr) {
 		if (write64b(cfd, mdp->m_mtime_rem) < 0) 
 			errExit("write time");
 		
@@ -100,7 +99,7 @@ int sv_sync_download(int cfd) {
 	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
 		errExit("sync_read fails");
 	
-	printf("numfiles : %u\n", numfiles);
+	printf("numfiles : %zu\n", numfiles);
 	// print the received pathnames
 	for (size_t n = 0; n < numfiles; ++n) {
 		printf("%s\n", pathnames[n]);
@@ -125,7 +124,7 @@ int sv_remove_files(int cfd) {
 	if (bi_paths_read(cfd, &pathnames, &numfiles) < 0)
 		errExit("sync_read fails");
 	
-	printf("numfiles : %u\n", numfiles);
+	printf("numfiles : %zu\n", numfiles);
 	// print the received pathnames
 	for (size_t n = 0; n < numfiles; ++n) {
 		printf("%s\n", pathnames[n]);
@@ -143,7 +142,7 @@ int sv_remove_files(int cfd) {
 		}
 	}
 
-	printf("rmcnt : %u\n", rmcnt);
+	printf("rmcnt : %zu\n", rmcnt);
 	// print the received pathnames
 	for (size_t n = 0; n < rmcnt; ++n) {
 		printf("%s\n", rmpaths[n]);

@@ -36,11 +36,7 @@
 
 void errExit(const char * msg);
 
-ssize_t canon_abspath(char * path);
-
 char * normalize_path(const char * input, char * output = nullptr);
-
-char * bi_repopath(char * abspath, bool set_repoabs = false);
 
 void bi_pathcombine(char * path, const char * prefix);
 

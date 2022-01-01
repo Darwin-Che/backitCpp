@@ -1,39 +1,36 @@
 #include "dentry.h"
 #include <sstream>
 
-void print_dirlst(dirlst_t * dl) {
+void print_dirvec(const dirvec_t & dv) {
 	static char mtime_loc[30];
 	static char mtime_rem[30];
 	unsigned count = 0;
 	printf("Printing the dirlst :\n");
-	for (mdirent_t * mdp = dl->head; mdp; mdp = mdp->m_next) {
+	for (mdirent_t * mdp : dv.arr) {
 		prtime(mtime_loc, &mdp->m_mtime_loc);
 		prtime(mtime_rem, &mdp->m_mtime_rem);
 		printf("%-10s  |  %s  |  %s\n", mdp->m_name, mtime_loc, mtime_rem);
 		++count;
 	}
-	printf("Length = %u. Count = %zu. \n\n", count, dl->len);
+	printf("Length = %u. Count = %zu. \n\n", count, dv.arr.size());
 
 }
 
-dirlst_t * to_dirlst(const char * pathname) {
-	dirlst_t * lst = new dirlst_t;
-	lst->head = nullptr;
-	lst->len = 0;
-	mdirent_t ** tail = &lst->head;
+dirvec_t to_dirvec(const char * pathname) {
+	dirvec_t dvec;
 	DIR * dirp = opendir(pathname);
+	if (dirp == nullptr) 
+		errExit("opendir");
 	dirent * dp;
-	
-	// reading mtime
+
+	// preparing filename prefix
 	struct stat st;
-	int pathlen = strlen(pathname);
+	size_t pathlen = strlen(pathname);
 	char * filename = new char[pathlen + NAME_MAX + 2];
 	strcpy(filename, pathname);
 	filename[pathlen++] = '/';
 
-	if (dirp == nullptr) {
-		std::runtime_error("opendir\n");
-	}
+	mdirent_t * mdp;
 	for(;;) {
 		errno = 0;
 		dp = readdir(dirp);
@@ -42,81 +39,66 @@ dirlst_t * to_dirlst(const char * pathname) {
 		if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) 
 			continue;
 
-		*tail = new mdirent_t;
+		mdp = new mdirent_t;
 		// file name
-		strcpy((*tail)->m_name, dp->d_name);
-		(*tail)->m_name_len = strlen((*tail)->m_name);
+		strcpy(mdp->m_name, dp->d_name);
+		mdp->m_name_len = strlen(mdp->m_name);
 		// read mtime
 		strcpy(filename + pathlen, dp->d_name);
 		memset(&st, 0x0, sizeof(st));
 		if (stat(filename, &st) == -1)
-			std::runtime_error("stat\n");
-		(*tail)->m_mtime_loc = (*tail)->m_mtime_rem = st.st_mtime;
-		// add list len
-		++lst->len;
-		
-		tail = &(*tail)->m_next;
+			errExit("stat a file");
+		mdp->m_mtime_loc = mdp->m_mtime_rem = st.st_mtime;
+		// add to vector
+		dvec.arr.push_back(mdp);
 	}
-	(*tail) = nullptr;
 	delete[] filename;
-
-	return lst;
+	return dvec;
 }
 
-dirtbl_t * to_dirtbl(dirlst_t * lst) {
-	dirtbl_t * tbl = new dirtbl_t;
-	tbl->data = std::map<std::string, mdirent_t *>();
+// should only be used temporarily by comb_loc_rem, 
+// drawback: allocated a copy of m_name, which could be large
+// replace: sort the dirvec_t to combine without extra memory usage
+static dirtbl_t to_dirtbl(const dirvec_t & vec) {
+	dirtbl_t tbl;
 
-	for (mdirent_t * mdp = lst->head; mdp; mdp = mdp->m_next)
-		tbl->data[mdp->m_name] = mdp;
+	for (mdirent_t * mdp : vec.arr)
+		tbl.data[mdp->m_name] = mdp;
 
 	return tbl;
 }
 
 void comb_loc_rem(
-		dirlst_t * inloc, 
-		dirlst_t * inrem,
-		dirlst_t ** outloc,
-		dirlst_t ** outrem,
-		dirlst_t ** outsync)
+		dirvec_t inloc, 
+		dirvec_t inrem,
+		dirvec_t * outloc,
+		dirvec_t * outrem,
+		dirvec_t * outsync)
 {
-	// allocates the return structures
-	*outloc = new dirlst_t;
-	*outrem = new dirlst_t;
-	*outsync = new dirlst_t;
-	(*outloc)->len = (*outrem)->len = (*outsync)->len = 0;
-	// the tail to append to
-	mdirent_t ** outloc_tail = &(*outloc)->head;
-	mdirent_t ** outrem_tail = &(*outrem)->head;
-	mdirent_t ** outsync_tail = &(*outsync)->head;
+	// clear the return structures
+	// *outloc = dirvec_t();
+	// *outrem = dirvec_t();
+	// *outsync = dirvec_t();
 
 	// always make inloc table
-	dirtbl_t * tbl = to_dirtbl(inrem); 
+	dirtbl_t tbl = to_dirtbl(inrem); 
 	std::map<std::string, mdirent_t *>::iterator it;
-	for (mdirent_t * mdp = inloc->head; mdp; mdp = mdp->m_next) {
-		if ((it = tbl->data.find(mdp->m_name)) != tbl->data.end()) {
-			*outsync_tail = new mdirent_t;
-			memcpy(*outsync_tail, mdp, sizeof(mdirent_t));
-			(*outsync_tail)->m_mtime_rem = (*it).second->m_mtime_rem;
-			outsync_tail = &(*outsync_tail)->m_next;
-			(*outsync)->len++;
-			tbl->data.erase(mdp->m_name);
+	for (mdirent_t * mdp : inloc.arr) {
+		if ((it = tbl.data.find(mdp->m_name)) != tbl.data.end()) {
+			mdirent_t * mdp_copy = new mdirent_t;
+			memcpy(mdp_copy, mdp, sizeof(mdirent_t));
+			mdp_copy->m_mtime_rem = (*it).second->m_mtime_rem;
+			outsync->arr.push_back(mdp_copy);
+			tbl.data.erase(mdp->m_name);
 		} else {
-			*outloc_tail = new mdirent_t;
-			memcpy(*outloc_tail, mdp, sizeof(mdirent_t));
-			outloc_tail = &(*outloc_tail)->m_next;
-			(*outloc)->len++;
+			mdirent_t * mdp_copy = new mdirent_t;
+			memcpy(mdp_copy, mdp, sizeof(mdirent_t));
+			outloc->arr.push_back(mdp_copy);
 		}
 	}
-	for (auto p : tbl->data) {
-		*outrem_tail = new mdirent_t;
-		memcpy(*outrem_tail, p.second, sizeof(mdirent_t));
-		outrem_tail = &(*outrem_tail)->m_next;
-		(*outrem)->len++;
+	for (auto p : tbl.data) {
+		mdirent_t * mdp_copy = new mdirent_t;
+		memcpy(mdp_copy, p.second, sizeof(mdirent_t));
+		outrem->arr.push_back(mdp_copy);
 	}
-	*outloc_tail = nullptr;
-	*outrem_tail = nullptr;
-	*outsync_tail = nullptr;
-
-	delete tbl;
 }

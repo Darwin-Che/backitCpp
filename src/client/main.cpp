@@ -7,7 +7,7 @@ extern char * optarg;
 
 int main(int argc, char *argv[])
 {
-	if (argc < 1 || strcmp(argv[1], "--help") == 0) 
+	if (argc <= 1 || strcmp(argv[1], "--help") == 0) 
 		errExit("usage error");
 	
 	if (strcmp(argv[1], "ls") == 0) {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
 	} else if (strcmp(argv[1], "path") == 0) {
 		char * x = normalize_path(argv[2]);
-		char * y = bi_repopath(x, 1);
+		char * y = cl_getrepopath(x, 1);
 		printf("ancestor : %s\n", x);
 		printf("repopath : %s\n", y);
 		delete[] x;

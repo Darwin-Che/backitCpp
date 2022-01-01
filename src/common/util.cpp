@@ -87,64 +87,11 @@ char * normalize_path(const char * input, char * output) {
 	return output;
 }
 
-/* Given an absolute path, find closest ancestor that is a backit repo
- * Return nullptr if fail
- * Return a heap allocated string containing the relative path to that ancestor
- * Modify the input so that the input is the path to that ancestor
- */
-char * bi_repopath(char * abspath, bool set_repoabs) {
-	char * ret = new char[PATH_MAX + 1]; // use ret temporarily for constructing paths
-	strcpy(ret, abspath);
-	size_t e = strlen(abspath); // the strlen absolute path
-	struct stat st;
-
-	while (e >= 0) {
-		ret[e] = '/';
-		strcpy(&ret[e+1], META_DIR);
-		memset(&st, 0x0, sizeof(struct stat));
-		if (stat(ret, &st) != -1)
-			break;
-		
-		if (e == 0) {
-			// already checked all of ancestors
-			delete[] ret;
-			return nullptr;
-		}
-
-		while (--e >= 0 && ret[e] != '/') ;
-	}
-
-	if (e < 0) {
-		delete[] ret;
-		return nullptr;
-	}
-
-	// Populate abspath and ret
-
-	if (e == strlen(abspath)) {
-		// Special Case : ancestor is abspath
-		strcpy(ret, ".");
-	} else {
-		strcpy(ret, &abspath[e+1]);
-	}
-
-	if (set_repoabs) {
-		if (e == 0) {
-			// Special Case : ancestor is '/'
-			abspath[e+1] = '\0';
-		} else {
-			abspath[e] = '\0';
-		}
-	}
-	
-	return ret;
-}
-
 void bi_pathcombine(char * path, const char * prefix) {
 	size_t pathlen = strlen(path);
 	size_t prefixlen = strlen(prefix);
 
-	memcpy(&path[prefixlen + 1], &path[0], pathlen);
+	memcpy(&path[prefixlen + 1], &path[0], pathlen + 1);
 	memcpy(&path[0], &prefix[0], prefixlen);
 	path[prefixlen] = '/';
 }
@@ -357,8 +304,6 @@ int bi_paths_read(int fd, char*** filenames, size_t* numfiles) {
 
 	return 0;
 }
-
-
 
 /* Return values:
  * -1 : fails
