@@ -155,37 +155,3 @@ int sv_remove_files(int cfd) {
 }
 
 
-#if 0
-int sv_file(int cfd) {
-	char pathname[PATH_MAX]; // big stack allocation
-	struct stat st;
-	size_t filesz;
-	ssize_t sendsz;
-	off_t fileoffs;
-	int ffd;
-
-	if (readLine(cfd, pathname, PATH_MAX) <= 0) {
-		close(cfd);
-	}
-
-	memset(&st, 0x0, sizeof(st));
-	if (stat(pathname, &st) == -1) 
-		errExit("sv_file : cannot stat file");
-	
-	ffd = open(pathname, O_RDONLY);
-	if (ffd < 0)
-		errExit("sv_file : cannot read file");
-
-	filesz = st.st_size;
-	write64b(cfd, filesz);
-
-	sendsz = sendfile(cfd, ffd, &fileoffs, filesz);
-	if (sendsz < 0 || (size_t) sendsz != filesz) 
-		errExit("sv_file : tranmission error");
-	
-	close(cfd);
-	return 0;
-}
-#endif
-
-
