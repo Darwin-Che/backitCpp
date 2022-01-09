@@ -1,5 +1,8 @@
 #include "header.h"
 
+const char * log_path = "log.txt";
+FILE * log_fptr = fopen(log_path, "w");
+
 void errExit(const char * msg) {
 	printf("%s\n", msg);
 	exit(1);

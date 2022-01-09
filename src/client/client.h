@@ -19,4 +19,6 @@ int cl_sync_upload(int argc, char ** argv);
 
 void cl_config_read(const char * repoabs);
 
+void start_ui_loop();
+
 #endif

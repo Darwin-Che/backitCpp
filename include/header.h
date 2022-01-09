@@ -30,7 +30,13 @@
 
 #define META_DIR	".backit"
 
-#define prtime(s, t) strftime(s, 30, "%c", localtime((time_t *)t))
+#define prtime(s, t, len) \
+	if (*t == 0) s[0] = '\0'; \
+	else strftime(s, len, "%c", localtime((time_t *)t))
+
+extern FILE * log_fptr;
+#define eprintf(...) fprintf (log_fptr, __VA_ARGS__); fflush (log_fptr)
+#define flush() fflush (log_fptr)
 
 // Utils
 

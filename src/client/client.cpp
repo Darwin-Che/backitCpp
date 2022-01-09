@@ -55,7 +55,8 @@ int cl_ls(int argc, char ** argv) {
 
 		if (read64b(cfd, &mtime_rem) < 0) 
 			errExit("read time");
-		mdp->m_mtime_loc = mdp->m_mtime_rem = mtime_rem;
+		mdp->m_mtime_loc = mtime_null;
+		mdp->m_mtime_rem = mtime_rem;
 
 		numRead = readLine(cfd, &mdp->m_name[0], NAME_MAX);
 		if (numRead == -1)

@@ -9,6 +9,8 @@
 #include <vector>
 #include "header.h"
 
+const int64_t mtime_null = 0;
+
 // in memory struct for directory entries
 struct mdirent_t {
 	int64_t		m_mtime_loc;

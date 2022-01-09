@@ -20,8 +20,13 @@ server : $(HEADER) $(SERVER_OBJ) $(COMMON_OBJ)
 
 
 client :$(HEADER) $(CLIENT_OBJ) $(COMMON_OBJ)
-	$(CC) $(CFLAGS) $(CLIENT_OBJ) $(COMMON_OBJ) -o client
+	$(CC) $(CFLAGS) $(CLIENT_OBJ) $(COMMON_OBJ) -lcurses -o client
 
+cinstall: client
+	cp client /usr/local/bin
+	
+sinstall: server
+	cp server /usr/local/bin
 
 %.o : %.cpp $(HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@

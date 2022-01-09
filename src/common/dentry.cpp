@@ -7,8 +7,8 @@ void print_dirvec(const dirvec_t & dv) {
 	unsigned count = 0;
 	printf("Printing the dirlst :\n");
 	for (mdirent_t * mdp : dv.arr) {
-		prtime(mtime_loc, &mdp->m_mtime_loc);
-		prtime(mtime_rem, &mdp->m_mtime_rem);
+		prtime(mtime_loc, &mdp->m_mtime_loc, 30);
+		prtime(mtime_rem, &mdp->m_mtime_rem, 30);
 		printf("%-10s  |  %s  |  %s\n", mdp->m_name, mtime_loc, mtime_rem);
 		++count;
 	}
@@ -48,7 +48,8 @@ dirvec_t to_dirvec(const char * pathname) {
 		memset(&st, 0x0, sizeof(st));
 		if (stat(filename, &st) == -1)
 			errExit("stat a file");
-		mdp->m_mtime_loc = mdp->m_mtime_rem = st.st_mtime;
+		mdp->m_mtime_loc = st.st_mtime;
+		mdp->m_mtime_rem = mtime_null;
 		// add to vector
 		dvec.arr.push_back(mdp);
 	}
