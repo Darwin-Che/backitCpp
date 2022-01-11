@@ -7,8 +7,8 @@
  * Return a heap allocated string containing the relative path to that ancestor
  * Modify the input so that the input is the path to that ancestor
  */
-char * cl_getrepopath(char * abspath, bool set_repoabs) {
-	char * ret = new char[PATH_MAX + 1]; // use ret also for constructing paths
+char * cl_getrepopath(char * abspath, bool set_repoabs, char * ret) {
+	if (ret == nullptr) ret = new char[PATH_MAX + 1]; // use ret also for constructing paths
 	strcpy(ret, abspath);
 	size_t e = strlen(abspath); // the strlen absolute path
 	struct stat st;
@@ -49,17 +49,6 @@ char * cl_getrepopath(char * abspath, bool set_repoabs) {
 			abspath[e+1] = '\0';
 		} else {
 			abspath[e] = '\0';
-		}
-	}
-	
-	// read in config from the ancestor directory
-
-	cl_config_read(abspath);
-	if (strcmp(cl_config_obj.REPO_PREFIX, "") != 0) {
-		if (strcmp(ret, ".") == 0 ) {
-			strcpy(ret, cl_config_obj.REPO_PREFIX);
-		} else {
-			bi_pathcombine(ret, cl_config_obj.REPO_PREFIX);
 		}
 	}
 

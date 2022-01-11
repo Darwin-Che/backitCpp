@@ -69,17 +69,9 @@ static dirtbl_t to_dirtbl(const dirvec_t & vec) {
 	return tbl;
 }
 
-void comb_loc_rem(
-		dirvec_t inloc, 
-		dirvec_t inrem,
-		dirvec_t * outloc,
-		dirvec_t * outrem,
-		dirvec_t * outsync)
+dircomb_t comb_loc_rem(dirvec_t inloc, dirvec_t inrem)
 {
-	// clear the return structures
-	// *outloc = dirvec_t();
-	// *outrem = dirvec_t();
-	// *outsync = dirvec_t();
+	dircomb_t dirdata;
 
 	// always make inloc table
 	dirtbl_t tbl = to_dirtbl(inrem); 
@@ -89,17 +81,19 @@ void comb_loc_rem(
 			mdirent_t * mdp_copy = new mdirent_t;
 			memcpy(mdp_copy, mdp, sizeof(mdirent_t));
 			mdp_copy->m_mtime_rem = (*it).second->m_mtime_rem;
-			outsync->arr.push_back(mdp_copy);
+			dirdata.sync.arr.push_back(mdp_copy);
 			tbl.data.erase(mdp->m_name);
 		} else {
 			mdirent_t * mdp_copy = new mdirent_t;
 			memcpy(mdp_copy, mdp, sizeof(mdirent_t));
-			outloc->arr.push_back(mdp_copy);
+			dirdata.loc.arr.push_back(mdp_copy);
 		}
 	}
 	for (auto p : tbl.data) {
 		mdirent_t * mdp_copy = new mdirent_t;
 		memcpy(mdp_copy, p.second, sizeof(mdirent_t));
-		outrem->arr.push_back(mdp_copy);
+		dirdata.rem.arr.push_back(mdp_copy);
 	}
+
+	return dirdata;
 }

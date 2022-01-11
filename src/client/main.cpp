@@ -29,14 +29,6 @@ int main(int argc, char *argv[])
 		if (cl_rm(argc - 1, argv + 1) < 0)
 			errExit("cl_rm fail");
 
-	} else if (strcmp(argv[1], "path") == 0) {
-		char * x = normalize_path(argv[2]);
-		char * y = cl_getrepopath(x, 1);
-		printf("ancestor : %s\n", x);
-		printf("repopath : %s\n", y);
-		delete[] x;
-		delete[] y;
-
 	} else {
 		errExit("usage error");
 	}

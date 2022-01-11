@@ -2,6 +2,33 @@
 #include "header.h"
 #include "dentry.h"
 
+char repoabs[PATH_MAX + 1];
+char reporel[PATH_MAX + 1];
+
+int cl_start(const char * input_path) {
+	normalize_path(input_path, cl_params_obj.repoabs);
+	cl_getrepopath(cl_params_obj.repoabs, true, cl_params_obj.absrel);
+	cl_config_read(cl_params_obj.repoabs);
+}
+
+char * cl_reporel(char * output) {
+	if (output == nullptr) 
+		output = new char[PATH_MAX + 1];
+	if (strcmp(cl_params_obj.REPO_PREFIX, "") != 0) {
+		strcpy(output, cl_params_obj.absrel);
+		bi_pathaddprefix(output, cl_params_obj.REPO_PREFIX);
+	}
+	return output;
+}
+
+char * cl_fsabs(char * output) {
+	if (output == nullptr)
+		output = new char[PATH_MAX + 1];
+	strcpy(output, cl_params_obj.absrel);
+	bi_pathaddprefix(output, cl_params_obj.repoabs);
+	return output;
+}
+
 int cl_connect() {
 	struct sockaddr_in svaddr;
 	int cfd;
@@ -23,15 +50,23 @@ int cl_connect() {
 	return cfd;
 }
 
-int cl_ls(int argc, char ** argv) {
+int cl_ls(int argc, const char * const * argv) {
+	_cl_ls(argc > 1 ? argv[1] : ".");
+	return 0;
+}
+
+dircomb_t _cl_ls(const char * input_path) {
 	int cfd = cl_connect();
 
-	char * fsabs = normalize_path(argc > 1 ? argv[1] : ".");
-	printf("File system abs path : %s\n", fsabs);
-	char * reporel = cl_getrepopath(fsabs);
-	printf("reporel : %s\nfsabs : %s\n", reporel, fsabs);
-	if (reporel == nullptr)
-		errExit("Given path is not under a repo. Exit...");
+	char * absrel_tmp = new char[PATH_MAX + 1];
+	strcpy(absrel_tmp, input_path);
+	bi_pathaddprefix(absrel_tmp, cl_params_obj.absrel);
+
+	char * fsabs = cl_fsabs();
+	char * reporel = cl_reporel();
+	eprintf("[ls] fsabs : %s\n", fsabs);
+	eprintf("[ls] reporel : %s\n", reporel);
+
 	ssize_t numRead;
 	dirvec_t dvec;
 
@@ -67,24 +102,7 @@ int cl_ls(int argc, char ** argv) {
 		dvec.arr.push_back(std::move(mdp));
 	}
 
-	dirvec_t locvec, remvec, syncvec;
-	comb_loc_rem(
-		to_dirvec(fsabs),
-		dvec,
-		&locvec,
-		&remvec,
-		&syncvec);
-
-	printf("LOCAL : \n");
-	print_dirvec(locvec);
-
-	printf("REMOTE : \n");
-	print_dirvec(remvec);
-
-	printf("SYNC : \n");
-	print_dirvec(syncvec);
-
-	return 0;
+	return comb_loc_rem(to_dirvec(fsabs), dvec);
 }
 
 int cl_sync_download(int argc, char ** argv) {

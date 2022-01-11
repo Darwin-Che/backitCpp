@@ -90,7 +90,11 @@ char * normalize_path(const char * input, char * output) {
 	return output;
 }
 
-void bi_pathcombine(char * path, const char * prefix) {
+void bi_pathaddprefix(char * path, const char * prefix) {
+	if (strcmp(path, ".") == 0) {
+		strcpy(path, prefix);
+		return;
+	}
 	size_t pathlen = strlen(path);
 	size_t prefixlen = strlen(prefix);
 

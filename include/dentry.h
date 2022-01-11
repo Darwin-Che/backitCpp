@@ -29,16 +29,17 @@ struct dirvec_t {
 	std::vector<mdirent_t *> arr;
 };
 
+struct dircomb_t {
+	dirvec_t rem;
+	dirvec_t loc;
+	dirvec_t sync;
+};
+
 // print dirlst
 void print_dirvec(const dirvec_t & dv);
 
 dirvec_t to_dirvec(const char * pathname);
 
-void comb_loc_rem(
-		dirvec_t inloc, 
-		dirvec_t inrem,
-		dirvec_t * outloc,
-		dirvec_t * outrem,
-		dirvec_t * outsync);
+dircomb_t comb_loc_rem(dirvec_t inloc, dirvec_t inrem);
 
 #endif

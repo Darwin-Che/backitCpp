@@ -44,7 +44,7 @@ void errExit(const char * msg);
 
 char * normalize_path(const char * input, char * output = nullptr);
 
-void bi_pathcombine(char * path, const char * prefix);
+void bi_pathaddprefix(char * path, const char * prefix);
 
 ssize_t bi_readn(int fd, void * buf, size_t sz, size_t perlimit = 0);
 

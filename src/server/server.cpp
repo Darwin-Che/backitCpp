@@ -73,7 +73,7 @@ int sv_dirlst(int cfd) {
 	}
 
 	printf("pathname : %s\n", pathname);
-	bi_pathcombine(pathname, REPOABS);
+	bi_pathaddprefix(pathname, REPOABS);
 	printf("pathname : %s\n", pathname);
 	dirvec_t dl = to_dirvec(pathname);
 	if (write64b(cfd, dl.arr.size()) < 0)

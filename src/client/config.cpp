@@ -2,10 +2,10 @@
 #include "header.h"
 #include "dentry.h"
 
-cl_config_t cl_config_obj;
+cl_params_t cl_params_obj;
 
 static void cl_config_reset() {
-	cl_config_obj.REPO_PREFIX[0] = '\0';
+	cl_params_obj.REPO_PREFIX[0] = '\0';
 }
 
 void cl_config_read(const char * repoabs) {
@@ -18,7 +18,7 @@ void cl_config_read(const char * repoabs) {
 	int fd = open(configabs, O_RDONLY);
 	if (fd < 0) {
 		printf("Fail to find config file\n");
-		printf("REPO_PREFIX is \"%s\"\n", cl_config_obj.REPO_PREFIX);
+		printf("REPO_PREFIX is \"%s\"\n", cl_params_obj.REPO_PREFIX);
 		return;
 	}
 
@@ -37,8 +37,8 @@ void cl_config_read(const char * repoabs) {
 			errExit("Config file wrong format");
 
 		if (strncmp("REPO_PREFIX", buf, i) == 0) {
-			strcpy(cl_config_obj.REPO_PREFIX, &buf[i+1]);
-			printf("REPO_PREFIX is \"%s\"\n", cl_config_obj.REPO_PREFIX);
+			strcpy(cl_params_obj.REPO_PREFIX, &buf[i+1]);
+			printf("REPO_PREFIX is \"%s\"\n", cl_params_obj.REPO_PREFIX);
 		}
 	}
 }

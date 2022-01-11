@@ -33,6 +33,6 @@ sinstall: server
 
 .PHONY: clean
 clean : 
-	rm -f $(SERVER_OBJ) $(COMMON_OBJ)
+	rm -f $(CLIENT_OBJ) $(SERVER_OBJ) $(COMMON_OBJ)
 	rm -f server client
 
