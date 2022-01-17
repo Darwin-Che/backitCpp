@@ -1,6 +1,6 @@
 #include "server.h"
 
-char REPOABS[PATH_MAX];
+char repoabs[PATH_MAX + 1];
 
 /* The entry point from the loop of the server
  * Procondition : cfd and claddr and len are valid
@@ -66,14 +66,14 @@ int sv_entry(int cfd, struct sockaddr_in * claddr, socklen_t cllen) {
 }
 
 int sv_dirlst(int cfd) {
-	char pathname[PATH_MAX]; // big stack allocation
+	char pathname[PATH_MAX + 1]; // big stack allocation
 
-	if (readLine(cfd, pathname, PATH_MAX) <= 0) {
+	if (readLine(cfd, pathname, PATH_MAX + 1) <= 0) {
 		close(cfd);
 	}
 
 	printf("pathname : %s\n", pathname);
-	bi_pathaddprefix(pathname, REPOABS);
+	bi_pathaddprefix(pathname, repoabs);
 	printf("pathname : %s\n", pathname);
 	dirvec_t dl = to_dirvec(pathname);
 	if (write64b(cfd, dl.arr.size()) < 0)

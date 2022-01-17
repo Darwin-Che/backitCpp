@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
 	// Initialize REPO
 
 	if (argc > 1) {
-		normalize_path(argv[1], REPOABS);
+		normalize_path(argv[1], repoabs);
 	} else {
-		normalize_path(".", REPOABS);
+		normalize_path(".", repoabs);
 	}
 
 	// Initialize Socket
